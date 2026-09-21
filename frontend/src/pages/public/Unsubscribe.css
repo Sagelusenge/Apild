@@ -1,0 +1,105 @@
+.unsubscribe-page {
+  min-height: min(650px, calc(100vh - 78px));
+  display: grid;
+  align-items: center;
+  padding: 76px 0;
+  background: linear-gradient(145deg, var(--mint), var(--blue-tint));
+}
+
+.unsubscribe-page__container {
+  display: grid;
+  place-items: center;
+}
+
+.unsubscribe-card {
+  width: min(560px, 100%);
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding: clamp(28px, 5vw, 48px);
+  text-align: left;
+}
+
+.unsubscribe-card__icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  color: var(--secondary);
+  background: var(--mint);
+  border-radius: 16px;
+}
+
+.unsubscribe-card--success .unsubscribe-card__icon {
+  color: #087555;
+  background: #e5f8ef;
+}
+
+.unsubscribe-card--error .unsubscribe-card__icon,
+.unsubscribe-card--missing .unsubscribe-card__icon {
+  color: var(--danger);
+  background: var(--danger-tint);
+}
+
+.unsubscribe-card h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.55rem);
+}
+
+.unsubscribe-card > p {
+  max-width: 480px;
+  margin: -5px 0 3px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.unsubscribe-card__notice {
+  width: 100%;
+  margin-top: 2px !important;
+  padding: 13px 15px;
+  color: var(--text) !important;
+  background: var(--page);
+  border-left: 3px solid var(--secondary);
+  border-radius: 0 9px 9px 0;
+  font-size: .86rem;
+}
+
+.unsubscribe-card .button {
+  min-height: 46px;
+  margin-top: 5px;
+}
+
+.unsubscribe-card__processing {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 9px !important;
+  color: var(--secondary) !important;
+  font-weight: 800;
+}
+
+.unsubscribe-card__processing .spinner {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.unsubscribe-card__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+[data-theme='dark'] .unsubscribe-page {
+  background: linear-gradient(145deg, #15382f, #13292f);
+}
+
+[data-theme='dark'] .unsubscribe-card--success .unsubscribe-card__icon {
+  color: #8fe0c0;
+  background: #123e31;
+}
+
+@media (max-width: 640px) {
+  .unsubscribe-page { min-height: calc(100vh - 78px); padding: 36px 0; }
+  .unsubscribe-card { margin: 0 4px; }
+}

@@ -1,0 +1,33 @@
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition:
+    opacity .52s cubic-bezier(.22, .8, .26, 1) var(--reveal-delay, 0ms),
+    transform .52s cubic-bezier(.22, .8, .26, 1) var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+[data-reveal='left'] { transform: translate3d(-22px, 0, 0); }
+[data-reveal='right'] { transform: translate3d(22px, 0, 0); }
+[data-reveal='up'] { transform: translate3d(0, 22px, 0); }
+
+[data-reveal].is-revealed,
+[data-reveal][data-revealed='true'] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+[data-reveal]:focus-within {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

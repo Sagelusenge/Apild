@@ -1,0 +1,37 @@
+.portal-sidebar {
+  overflow-y: auto;
+}
+
+.sidebar-brand > a {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sidebar-logout {
+  width: 100%;
+  min-height: 42px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 8px;
+  color: #d4eae2;
+  background: #003d2f;
+  font-size: .75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sidebar-logout:hover {
+  color: #fff;
+  background: #003326;
+}
+
+.sidebar-bottom {
+  display: block;
+  margin-top: auto;
+  padding-top: 16px;
+}

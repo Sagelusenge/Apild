@@ -1,0 +1,1 @@
+import ResourcePage from '../portal/ResourcePage'; export default function Tasks(){return <ResourcePage title="Taches" description="Livrables, echeances et priorites des equipes." resource="tasks" canDelete/>;}

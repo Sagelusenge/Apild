@@ -1,0 +1,3 @@
+import Badge from '../common/Badge';
+const tones = { completed: 'success', in_progress: 'warning', todo: 'neutral', cancelled: 'danger' };
+export default function TaskCard({ task }) { return <div className="task-row"><div><strong>{task.title}</strong><small>{task.reference}</small></div><span>{task.project_name || (task.project_id ? `Projet #${task.project_id}` : 'Tâche indépendante')}</span><span>{task.due_date ? new Date(task.due_date).toLocaleDateString('fr-FR') : '—'}</span><Badge tone={task.priority === 'high' || task.priority === 'urgent' ? 'danger' : 'warning'}>{task.priority}</Badge><Badge tone={tones[task.status]}>{task.status}</Badge></div>; }

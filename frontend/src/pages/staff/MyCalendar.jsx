@@ -1,0 +1,1 @@
+import ResourcePage from '../portal/ResourcePage'; export default function MyCalendar(){return <ResourcePage title="Mon calendrier" description="Missions et rendez-vous auxquels vous participez." resource="events" canCreate={false}/>;}

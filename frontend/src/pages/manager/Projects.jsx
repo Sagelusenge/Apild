@@ -1,0 +1,1 @@
+import ResourcePage from '../portal/ResourcePage'; export default function Projects(){return <ResourcePage title="Projets" description="Portefeuille, avancement et coordination des programmes." resource="projects" canDelete/>;}

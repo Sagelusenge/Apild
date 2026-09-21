@@ -1,0 +1,1 @@
+import ResourcePage from '../portal/ResourcePage'; export default function Articles(){return <ResourcePage title="Articles" description="Publications, brouillons et contenus editoriaux." resource="articles" canDelete/>;}

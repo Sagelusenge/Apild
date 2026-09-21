@@ -1,0 +1,23 @@
+const controller = require('./newsletter.controller');
+const { createCrudRouter } = require('../../utils/crudFactory');
+const config = require('../../config/entities').newsletters;
+const schemas=require('./newsletter.validation');
+const express=require('express');
+const {z}=require('zod');
+const {authenticate}=require('../../middlewares/auth.middleware');
+const {requirePermission}=require('../../middlewares/permission.middleware');
+const {validate,validateCrudBody}=require('../../middlewares/validation.middleware');
+
+const router=express.Router();
+const subscriberConfig={fields:['email','first_name','last_name','status','source','unsubscribed_at'],required:['email']};
+router.post('/subscribe',validate(z.object({email:z.string().email(),first_name:z.string().max(100).optional(),last_name:z.string().max(100).optional(),source:z.string().max(100).optional()}).strict()),controller.subscribe);
+router.post('/unsubscribe',validate(z.object({token:z.string().length(64).regex(/^[a-f0-9]+$/i)}).strict()),controller.unsubscribe);
+router.get('/subscribers',authenticate,requirePermission('newsletter.manage'),controller.subscribers.list);
+router.get('/subscribers/:id',authenticate,requirePermission('newsletter.manage'),controller.subscribers.get);
+router.post('/subscribers',authenticate,requirePermission('newsletter.manage'),validateCrudBody(subscriberConfig),controller.subscribers.create);
+router.put('/subscribers/:id',authenticate,requirePermission('newsletter.manage'),validateCrudBody(subscriberConfig),controller.subscribers.update);
+router.patch('/subscribers/:id',authenticate,requirePermission('newsletter.manage'),validateCrudBody(subscriberConfig,true),controller.subscribers.update);
+router.delete('/subscribers/:id',authenticate,requirePermission('newsletter.manage'),controller.subscribers.remove);
+router.post('/:id/send',authenticate,requirePermission('newsletter.manage'),controller.send);
+router.use('/',createCrudRouter(controller,config,schemas));
+module.exports=router;
