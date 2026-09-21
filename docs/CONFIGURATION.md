@@ -36,7 +36,7 @@ Ne jamais reutiliser un secret entre le developpement, les tests et la productio
 | `DB_SSL_REJECT_UNAUTHORIZED` | Verification du certificat du serveur |
 | `DB_SSL_CA` | Certificat CA PEM de la base distante, requis avec vérification TLS stricte |
 
-En production, utiliser le compte a privileges limites documente dans `docs/DATABASE.md`, et non `root`.
+En production, utiliser le compte a privileges limites documente dans `docs/DATABASE.md`, et non `root`. Pour Aiven, télécharger le certificat CA, le définir dans `DB_SSL_CA`, puis garder `DB_SSL=true` et `DB_SSL_REJECT_UNAUTHORIZED=true`.
 
 ### SMTP
 
@@ -84,6 +84,7 @@ Le frontend ne doit contenir aucun secret. Les variables Vite sont integrees au 
 
 ```env
 VITE_API_URL=http://localhost:4000/api
+# En production Render, préférer VITE_API_ORIGIN=https://api.example.org : le frontend ajoute /api.
 ```
 
 En production, remplacer cette valeur par l'URL HTTPS publique de l'API.

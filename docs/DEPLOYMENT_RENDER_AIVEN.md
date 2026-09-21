@@ -11,9 +11,11 @@ La base reste sur Aiven pour MySQL. Aucun mot de passe, certificat ou jeton n’
 
 1. Dans Render, créer un **Blueprint** depuis la branche `main` de `Sagelusenge/Apild`.
 2. Render demande la valeur de `DB_PASSWORD` : saisir le mot de passe Aiven en cours, uniquement dans ce formulaire.
-3. Conserver `DB_SSL=true`. La configuration temporaire utilise TLS avec le mode `REQUIRED` d’Aiven. Pour une vérification complète, télécharger le certificat CA dans Aiven, le coller dans `DB_SSL_CA`, puis passer `DB_SSL_REJECT_UNAUTHORIZED=true`.
+3. Télécharger le certificat CA depuis Aiven, le coller intégralement dans `DB_SSL_CA`, puis conserver `DB_SSL=true` et `DB_SSL_REJECT_UNAUTHORIZED=true`. L’API refuse de démarrer en production sans cette vérification TLS.
 4. Valider le Blueprint. La commande de build initialise la base Aiven si elle est vide, puis applique les migrations.
-5. Ouvrir `https://apild-api-sagel.onrender.com/health` et vérifier que l’API répond. Ouvrir ensuite `https://apild-web-sagel.onrender.com`.
+5. Ouvrir l’URL publique attribuée par Render au service API, ajouter `/health` et vérifier que l’API répond. Ouvrir ensuite l’URL publique du site statique.
+
+Les URL ne sont pas écrites en dur : le Blueprint les transmet automatiquement de l’API vers le frontend et inversement. Cela maintient CORS et les liens d’email corrects même après l’ajout d’un domaine personnalisé.
 
 Le compte manager `sagelusenge@gmail.com` est créé lors d’une première initialisation et exige le changement immédiat du mot de passe temporaire. Les comptes `@apild.test` sont désactivés dans l’environnement public.
 

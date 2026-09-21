@@ -15,9 +15,15 @@ services:
       - key: API_PREFIX
         value: /api
       - key: APP_URL
-        value: https://apild-api-sagel.onrender.com
+        fromService:
+          type: web
+          name: apild-api-sagel
+          envVarKey: RENDER_EXTERNAL_URL
       - key: FRONTEND_URL
-        value: https://apild-web-sagel.onrender.com
+        fromService:
+          type: web
+          name: apild-web-sagel
+          envVarKey: RENDER_EXTERNAL_URL
       - key: DB_HOST
         value: kls00192-ndovyalusengelwasivajustin-c2c9.a.aivencloud.com
       - key: DB_PORT
@@ -33,7 +39,7 @@ services:
       - key: DB_SSL
         value: "true"
       - key: DB_SSL_REJECT_UNAUTHORIZED
-        value: "false"
+        value: "true"
       - key: DB_SSL_CA
         sync: false
       - key: JWT_ACCESS_SECRET
@@ -85,8 +91,11 @@ services:
     staticPublishPath: dist
     autoDeployTrigger: commit
     envVars:
-      - key: VITE_API_URL
-        value: https://apild-api-sagel.onrender.com/api
+      - key: VITE_API_ORIGIN
+        fromService:
+          type: web
+          name: apild-api-sagel
+          envVarKey: RENDER_EXTERNAL_URL
     routes:
       - type: rewrite
         source: /*

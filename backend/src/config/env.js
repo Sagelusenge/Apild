@@ -64,6 +64,9 @@ if (parsed.data.NODE_ENV === 'production') {
     ['JWT_REFRESH_SECRET', parsed.data.JWT_REFRESH_SECRET]
   ].filter(([, value]) => !value || /change[_-]?me/i.test(value));
   if (unsafe.length) throw new Error(`Secrets de production non configures: ${unsafe.map(([key]) => key).join(', ')}`);
+  if (parsed.data.DB_SSL && parsed.data.DB_SSL_REJECT_UNAUTHORIZED && !parsed.data.DB_SSL_CA.trim()) {
+    throw new Error('DB_SSL_CA doit etre configure lorsque la verification TLS de la base est activee.');
+  }
   if (parsed.data.SMTP_HOST && parsed.data.SMTP_AUTH_TYPE === 'password' && (!parsed.data.SMTP_PASSWORD || /change[_-]?me/i.test(parsed.data.SMTP_PASSWORD))) {
     throw new Error('SMTP_PASSWORD doit etre configure en production');
   }
