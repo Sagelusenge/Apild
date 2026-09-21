@@ -34,6 +34,7 @@ Ne jamais reutiliser un secret entre le developpement, les tests et la productio
 | `DB_CONNECTION_LIMIT` | Taille maximale du pool de connexions |
 | `DB_SSL` | Chiffrement de la connexion distante |
 | `DB_SSL_REJECT_UNAUTHORIZED` | Verification du certificat du serveur |
+| `DB_SSL_CA` | Certificat CA PEM de la base distante, requis avec vérification TLS stricte |
 
 En production, utiliser le compte a privileges limites documente dans `docs/DATABASE.md`, et non `root`.
 

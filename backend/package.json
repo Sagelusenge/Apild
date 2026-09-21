@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "check": "node scripts/check-syntax.js",
+    "db:bootstrap": "node scripts/bootstrap.js",
     "db:migrate": "node scripts/migrate.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch"

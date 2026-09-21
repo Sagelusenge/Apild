@@ -1,6 +1,11 @@
 const mysql = require('mysql2/promise');
 const env = require('./env');
 
+const ssl = env.DB_SSL ? {
+  rejectUnauthorized: env.DB_SSL_REJECT_UNAUTHORIZED,
+  ...(env.DB_SSL_CA ? { ca: env.DB_SSL_CA.replace(/\\n/g, '\n') } : {})
+} : undefined;
+
 const pool = mysql.createPool({
   host: env.DB_HOST,
   port: env.DB_PORT,
@@ -15,7 +20,7 @@ const pool = mysql.createPool({
   decimalNumbers: true,
   dateStrings: true,
   enableKeepAlive: true,
-  ssl: env.DB_SSL ? { rejectUnauthorized: env.DB_SSL_REJECT_UNAUTHORIZED } : undefined
+  ssl
 });
 
 async function query(sql, params = []) {
