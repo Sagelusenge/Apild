@@ -1,21 +1,14 @@
-# Déploiement Render + Aiven
+# Ancien déploiement Render + Aiven
 
-Le dépôt contient `render.yaml` pour créer deux services Render séparés :
+Cette procédure est remplacée par [AWS App Runner + Render + Aiven](DEPLOYMENT_AWS_APP_RUNNER_RENDER.md). Le dépôt contient désormais `render.yaml` pour créer le frontend Render uniquement :
 
-- `apild-api-sagel` : l’API Express ;
 - `apild-web-sagel` : le frontend React livré comme site statique.
 
 La base reste sur Aiven pour MySQL. Aucun mot de passe, certificat ou jeton n’est versionné.
 
 ## Première installation
 
-1. Dans Render, créer un **Blueprint** depuis la branche `main` de `Sagelusenge/Apild`.
-2. Render demande la valeur de `DB_PASSWORD` : saisir le mot de passe Aiven en cours, uniquement dans ce formulaire.
-3. Télécharger le certificat CA depuis Aiven, le coller intégralement dans `DB_SSL_CA`, puis conserver `DB_SSL=true` et `DB_SSL_REJECT_UNAUTHORIZED=true`. L’API refuse de démarrer en production sans cette vérification TLS.
-4. Valider le Blueprint. La commande de build initialise la base Aiven si elle est vide, puis applique les migrations.
-5. Ouvrir l’URL publique attribuée par Render au service API, ajouter `/health` et vérifier que l’API répond. Ouvrir ensuite l’URL publique du site statique.
-
-Les URL ne sont pas écrites en dur : le Blueprint les transmet automatiquement de l’API vers le frontend et inversement. Cela maintient CORS et les liens d’email corrects même après l’ajout d’un domaine personnalisé.
+Suivre le guide AWS App Runner pour créer l’API et saisir son URL dans `VITE_API_ORIGIN` lors de la création du Blueprint Render.
 
 Le compte manager `sagelusenge@gmail.com` est créé lors d’une première initialisation et exige le changement immédiat du mot de passe temporaire. Les comptes `@apild.test` sont désactivés dans l’environnement public.
 

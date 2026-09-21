@@ -1,0 +1,58 @@
+version: 1.0
+runtime: nodejs22
+
+build:
+  commands:
+    build:
+      - cd backend && npm ci
+
+run:
+  command: cd backend && npm run db:bootstrap && npm run db:migrate && npm start
+  network:
+    port: 4000
+  env:
+    - name: NODE_ENV
+      value: production
+    - name: API_PREFIX
+      value: /api
+    - name: DB_HOST
+      value: kls00192-ndovyalusengelwasivajustin-c2c9.a.aivencloud.com
+    - name: DB_PORT
+      value: "22547"
+    - name: DB_USER
+      value: avnadmin
+    - name: DB_NAME
+      value: defaultdb
+    - name: DB_CONNECTION_LIMIT
+      value: "5"
+    - name: DB_SSL
+      value: "true"
+    - name: DB_SSL_REJECT_UNAUTHORIZED
+      value: "true"
+    - name: BCRYPT_ROUNDS
+      value: "12"
+    - name: ALLOW_PUBLIC_REGISTRATION
+      value: "false"
+    - name: UPLOAD_MAX_SIZE_MB
+      value: "10"
+    - name: LOG_LEVEL
+      value: info
+    - name: RATE_LIMIT_WINDOW_MS
+      value: "900000"
+    - name: RATE_LIMIT_MAX
+      value: "300"
+    - name: AUTH_RATE_LIMIT_MAX
+      value: "20"
+    - name: ENABLE_JOBS
+      value: "false"
+    - name: TRUST_PROXY
+      value: "1"
+  secrets:
+    - name: DB_PASSWORD
+      value-from: /apild/production/DB_PASSWORD
+    - name: DB_SSL_CA
+      value-from: /apild/production/DB_SSL_CA
+    - name: JWT_ACCESS_SECRET
+      value-from: /apild/production/JWT_ACCESS_SECRET
+    - name: JWT_REFRESH_SECRET
+      value-from: /apild/production/JWT_REFRESH_SECRET
