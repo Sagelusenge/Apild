@@ -36,7 +36,17 @@ Ne jamais reutiliser un secret entre le developpement, les tests et la productio
 | `DB_SSL_REJECT_UNAUTHORIZED` | Verification du certificat du serveur |
 | `DB_SSL_CA` | Certificat CA PEM de la base distante, requis avec vérification TLS stricte |
 
-En production, utiliser le compte a privileges limites documente dans `docs/DATABASE.md`, et non `root`. Pour Aiven, télécharger le certificat CA, le définir dans `DB_SSL_CA`, puis garder `DB_SSL=true` et `DB_SSL_REJECT_UNAUTHORIZED=true`.
+En production AWS RDS, utiliser le compte applicatif dédié documenté dans `docs/DATABASE.md`, et non `root`. Télécharger le bundle CA Amazon RDS de la région choisie, le définir dans `DB_SSL_CA`, puis garder `DB_SSL=true` et `DB_SSL_REJECT_UNAUTHORIZED=true`.
+
+### Stockage des fichiers
+
+| Variable | Rôle |
+| --- | --- |
+| `FILE_STORAGE` | `local` en développement, `s3` sur App Runner |
+| `S3_BUCKET` | Bucket privé qui contient les médias APILD |
+| `S3_REGION` | Région AWS du bucket |
+
+Le rôle d’instance App Runner doit avoir uniquement `s3:GetObject`, `s3:PutObject` et `s3:DeleteObject` sur le préfixe APILD du bucket. Les fichiers ne doivent pas dépendre du disque temporaire App Runner.
 
 ### SMTP
 
@@ -84,7 +94,7 @@ Le frontend ne doit contenir aucun secret. Les variables Vite sont integrees au 
 
 ```env
 VITE_API_URL=http://localhost:4000/api
-# En production Render, préférer VITE_API_ORIGIN=https://api.example.org : le frontend ajoute /api.
+# En production Amplify, préférer VITE_API_ORIGIN=https://api.example.org : le frontend ajoute /api.
 ```
 
 En production, remplacer cette valeur par l'URL HTTPS publique de l'API.

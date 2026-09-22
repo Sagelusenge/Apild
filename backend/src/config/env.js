@@ -24,6 +24,9 @@ const schema = z.object({
   DB_SSL: booleanFromString.default(false),
   DB_SSL_REJECT_UNAUTHORIZED: booleanFromString.default(true),
   DB_SSL_CA: z.string().default(''),
+  FILE_STORAGE: z.enum(['local', 's3']).default('local'),
+  S3_BUCKET: z.string().default(''),
+  S3_REGION: z.string().default(''),
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
@@ -66,6 +69,9 @@ if (parsed.data.NODE_ENV === 'production') {
   if (unsafe.length) throw new Error(`Secrets de production non configures: ${unsafe.map(([key]) => key).join(', ')}`);
   if (parsed.data.DB_SSL && parsed.data.DB_SSL_REJECT_UNAUTHORIZED && !parsed.data.DB_SSL_CA.trim()) {
     throw new Error('DB_SSL_CA doit etre configure lorsque la verification TLS de la base est activee.');
+  }
+  if (parsed.data.FILE_STORAGE === 's3' && (!parsed.data.S3_BUCKET.trim() || !parsed.data.S3_REGION.trim())) {
+    throw new Error('S3_BUCKET et S3_REGION doivent etre configures lorsque FILE_STORAGE=s3.');
   }
   if (parsed.data.SMTP_HOST && parsed.data.SMTP_AUTH_TYPE === 'password' && (!parsed.data.SMTP_PASSWORD || /change[_-]?me/i.test(parsed.data.SMTP_PASSWORD))) {
     throw new Error('SMTP_PASSWORD doit etre configure en production');

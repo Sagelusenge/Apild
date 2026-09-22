@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const apiBaseUrl = import.meta.env.VITE_API_ORIGIN || import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const apiOrigin = apiBaseUrl.replace(/\/?api\/?$/, '');
 
 export function resolveAvatarUrl(value) {

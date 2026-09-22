@@ -13,6 +13,7 @@ const asyncHandler = require('./utils/asyncHandler');
 const { apiLimiter } = require('./middlewares/rateLimit.middleware');
 const { notFound, errorHandler } = require('./middlewares/error.middleware');
 const auditMutation = require('./middlewares/audit.middleware');
+const fileService = require('./services/file.service');
 
 const app = express();
 app.disable('x-powered-by');
@@ -34,12 +35,24 @@ app.use(cors({
 app.use(compression());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
-app.use('/uploads/images', express.static(path.join(__dirname, '../uploads/images'), {
-  fallthrough: false,
-  maxAge: '1d',
-  dotfiles: 'deny',
-  immutable: appConfig.env === 'production'
-}));
+if (appConfig.fileStorage === 's3') {
+  app.get('/uploads/images/{*filePath}', asyncHandler(async (request, response) => {
+    const segments = Array.isArray(request.params.filePath) ? request.params.filePath : [request.params.filePath];
+    const relativePath = `uploads/images/${segments.filter(Boolean).join('/')}`;
+    const file = await fileService.getFile(relativePath);
+    response.type(file.contentType || 'application/octet-stream');
+    response.setHeader('cache-control', file.cacheControl || 'public, max-age=86400');
+    if (file.contentLength) response.setHeader('content-length', String(file.contentLength));
+    return file.stream.pipe(response);
+  }));
+} else {
+  app.use('/uploads/images', express.static(path.join(__dirname, '../uploads/images'), {
+    fallthrough: false,
+    maxAge: '1d',
+    dotfiles: 'deny',
+    immutable: appConfig.env === 'production'
+  }));
+}
 app.use(apiLimiter);
 
 app.get('/health', (_request, response) => response.json({

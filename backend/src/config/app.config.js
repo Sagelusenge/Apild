@@ -11,5 +11,8 @@ module.exports = Object.freeze({
   allowedOrigins: env.FRONTEND_URL.split(',').map((origin) => origin.trim()).filter(Boolean),
   trustProxy: env.TRUST_PROXY === 'true' ? true : env.TRUST_PROXY === 'false' ? false : Number.parseInt(env.TRUST_PROXY, 10) || false,
   uploadsDirectory: path.resolve(__dirname, '../../uploads'),
-  maxUploadBytes: env.UPLOAD_MAX_SIZE_MB * 1024 * 1024
+  maxUploadBytes: env.UPLOAD_MAX_SIZE_MB * 1024 * 1024,
+  fileStorage: env.FILE_STORAGE,
+  s3Bucket: env.S3_BUCKET,
+  s3Region: env.S3_REGION
 });

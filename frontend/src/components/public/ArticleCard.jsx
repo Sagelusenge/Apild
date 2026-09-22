@@ -17,7 +17,7 @@ export function resolveFeaturedImage(source, fallback) {
   // remains served by the public React application.
   if (value.startsWith('/') || value.startsWith('uploads/')) {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      const apiUrl = import.meta.env.VITE_API_ORIGIN || import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
       const origin = new URL(apiUrl, window.location.origin).origin;
       return `${origin}${value.startsWith('/') ? value : `/${value}`}`;
     } catch {

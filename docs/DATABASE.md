@@ -24,12 +24,13 @@ La commande memorise les migrations deja appliquees dans `schema_migrations`. El
 En production, le backend ne doit pas se connecter avec le compte `root`. Apres l'import du schema, creer un compte dedie avec un mot de passe fort :
 
 ```sql
-CREATE USER 'apild_app'@'localhost' IDENTIFIED BY 'REMPLACER_PAR_UN_MOT_DE_PASSE_FORT';
-GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE ON apild_platform.* TO 'apild_app'@'localhost';
+CREATE USER 'apild_app'@'%' IDENTIFIED BY 'REMPLACER_PAR_UN_MOT_DE_PASSE_FORT';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES, CREATE VIEW, SHOW VIEW,
+  CREATE ROUTINE, ALTER ROUTINE, EXECUTE, TRIGGER, EVENT ON apild_platform.* TO 'apild_app'@'%';
 FLUSH PRIVILEGES;
 ```
 
-Utiliser ensuite `DB_USER=apild_app` dans `backend/.env`. Si MariaDB se trouve sur un autre serveur, remplacer `localhost` par l'hote ou la plage reseau strictement necessaire.
+Utiliser ensuite `DB_USER=apild_app` dans `backend/.env`. Sur Amazon RDS, créer ce compte depuis le compte maître RDS et limiter son accès à l’instance privée ; l’API App Runner y accède via son connecteur VPC. Ces privilèges de schéma sont nécessaires car le démarrage applique les migrations. Dans une exploitation plus mature, exécuter les migrations avec un rôle distinct puis retirer les droits DDL du compte d’exécution.
 
 ## Connexion chiffree
 

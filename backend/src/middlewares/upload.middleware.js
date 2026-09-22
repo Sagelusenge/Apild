@@ -22,31 +22,47 @@ const avatarExtensions = Object.freeze({
 });
 const maxAvatarBytes = Math.min(appConfig.maxUploadBytes, 5 * 1024 * 1024);
 
-function createUploader(folder, { mimeTypes = allowedMimeTypes, maxBytes = appConfig.maxUploadBytes, filename } = {}) {
+function defaultFilename(file) {
+  const extension = path.extname(file.originalname).toLowerCase();
+  const safeBase = path.basename(file.originalname, extension).replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 80);
+  return `${Date.now()}-${safeBase}${extension}`;
+}
+
+function createUploader(folder, { mimeTypes = allowedMimeTypes, maxBytes = appConfig.maxUploadBytes, filenameFor, fieldName = 'file' } = {}) {
   const destination = path.join(appConfig.uploadsDirectory, folder);
-  fs.mkdirSync(destination, { recursive: true });
-  return multer({
-    storage: multer.diskStorage({
-      destination: (_request, _file, callback) => callback(null, destination),
-      filename: filename || ((_request, file, callback) => {
-        const extension = path.extname(file.originalname).toLowerCase();
-        const safeBase = path.basename(file.originalname, extension).replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 80);
-        callback(null, `${Date.now()}-${safeBase}${extension}`);
-      })
-    }),
+  const makeFilename = (file) => (filenameFor || defaultFilename)(file);
+  const storage = appConfig.fileStorage === 's3'
+    ? multer.memoryStorage()
+    : (() => {
+      fs.mkdirSync(destination, { recursive: true });
+      return multer.diskStorage({
+        destination: (_request, _file, callback) => callback(null, destination),
+        filename: (_request, file, callback) => callback(null, makeFilename(file))
+      });
+    })();
+  const upload = multer({
+    storage,
     limits: { fileSize: maxBytes, files: 1 },
     fileFilter: (_request, file, callback) => {
       if (!mimeTypes.has(file.mimetype)) return callback(new AppError('Type de fichier non autorise', 415, 'INVALID_FILE_TYPE'));
       return callback(null, true);
     }
+  }).single(fieldName);
+  return (request, response, next) => upload(request, response, (error) => {
+    if (request.file) {
+      request.file.filename = request.file.filename || makeFilename(request.file);
+      request.file.apildFolder = folder;
+    }
+    next(error);
   });
 }
 
 const profileAvatarUpload = createUploader('images/avatars', {
   mimeTypes: avatarMimeTypes,
   maxBytes: maxAvatarBytes,
-  filename: (_request, file, callback) => callback(null, `${crypto.randomUUID()}${avatarExtensions[file.mimetype]}`)
-}).single('avatar');
+  filenameFor: (file) => `${crypto.randomUUID()}${avatarExtensions[file.mimetype]}`,
+  fieldName: 'avatar'
+});
 
 function uploadProfileAvatar(request, response, next) {
   profileAvatarUpload(request, response, (error) => {
@@ -77,24 +93,23 @@ function hasValidSignature(mimeType, buffer) {
 async function validateUploadedFile(request, _response, next) {
   if (!request.file) return next();
   try {
-    const handle = await fsPromises.open(request.file.path, 'r');
-    const buffer = Buffer.alloc(16);
-    await handle.read(buffer, 0, buffer.length, 0);
-    await handle.close();
+    const buffer = request.file.buffer
+      ? request.file.buffer.subarray(0, 16)
+      : await fsPromises.readFile(request.file.path).then((file) => file.subarray(0, 16));
     if (!hasValidSignature(request.file.mimetype, buffer)) {
-      await fsPromises.unlink(request.file.path).catch(() => undefined);
+      if (request.file.path) await fsPromises.unlink(request.file.path).catch(() => undefined);
       return next(new AppError('Le contenu du fichier ne correspond pas a son type declare', 415, 'INVALID_FILE_SIGNATURE'));
     }
     return next();
   } catch (error) {
-    await fsPromises.unlink(request.file.path).catch(() => undefined);
+    if (request.file.path) await fsPromises.unlink(request.file.path).catch(() => undefined);
     return next(error);
   }
 }
 
 module.exports = {
-  uploadImage: createUploader('images').single('file'),
-  uploadDocument: createUploader('documents').single('file'),
+  uploadImage: createUploader('images'),
+  uploadDocument: createUploader('documents'),
   uploadProfileAvatar,
   validateUploadedFile
 };

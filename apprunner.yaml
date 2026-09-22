@@ -10,19 +10,16 @@ run:
   command: cd backend && npm run db:bootstrap && npm run db:migrate && npm start
   network:
     port: 4000
+    env: PORT
   env:
     - name: NODE_ENV
       value: production
     - name: API_PREFIX
       value: /api
-    - name: DB_HOST
-      value: kls00192-ndovyalusengelwasivajustin-c2c9.a.aivencloud.com
     - name: DB_PORT
-      value: "22547"
-    - name: DB_USER
-      value: avnadmin
+      value: "3306"
     - name: DB_NAME
-      value: defaultdb
+      value: apild_platform
     - name: DB_CONNECTION_LIMIT
       value: "5"
     - name: DB_SSL
@@ -47,7 +44,15 @@ run:
       value: "false"
     - name: TRUST_PROXY
       value: "1"
+    - name: FILE_STORAGE
+      value: s3
+    - name: S3_REGION
+      value: eu-north-1
   secrets:
+    - name: DB_HOST
+      value-from: /apild/production/DB_HOST
+    - name: DB_USER
+      value-from: /apild/production/DB_USER
     - name: DB_PASSWORD
       value-from: /apild/production/DB_PASSWORD
     - name: DB_SSL_CA
@@ -56,3 +61,5 @@ run:
       value-from: /apild/production/JWT_ACCESS_SECRET
     - name: JWT_REFRESH_SECRET
       value-from: /apild/production/JWT_REFRESH_SECRET
+    - name: S3_BUCKET
+      value-from: /apild/production/S3_BUCKET

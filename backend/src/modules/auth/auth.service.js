@@ -101,6 +101,7 @@ async function updateAvatar(user, file) {
   if (!currentUser) throw new AppError('Compte introuvable ou inactif', 404, 'NOT_FOUND');
 
   const avatarUrl = `/uploads/images/avatars/${file.filename}`;
+  await fileService.persistUpload(file, fileService.uploadRelativePath('images/avatars', file));
   const updated = await repository.updateAvatar(user.id, avatarUrl);
   if (!updated) throw new AppError('Compte introuvable ou inactif', 404, 'NOT_FOUND');
 
