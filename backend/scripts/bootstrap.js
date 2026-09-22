@@ -22,7 +22,8 @@ function splitStatements(sql) {
 
     const statement = buffer.trimEnd().slice(0, -delimiter.length).trim();
     buffer = '';
-    if (!statement || /^(CREATE\s+DATABASE|USE)\b/i.test(statement)) continue;
+    const executable = statement.replace(/^(?:\s*--[^\r\n]*(?:\r?\n|$))+/g, '').trim();
+    if (!executable || /^(CREATE\s+DATABASE|USE)\b/i.test(executable)) continue;
     output.push(statement);
   }
 

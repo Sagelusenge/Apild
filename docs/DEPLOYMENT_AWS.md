@@ -1,6 +1,8 @@
 # Déploiement AWS : Amplify, App Runner, RDS et S3
 
-L’application APILD est déployée intégralement sur AWS, sans dépendance Render ni Aiven :
+Cette procédure décrit une option AWS historique. Pour le déploiement actuel, voir `DEPLOYMENT_RENDER_AIVEN.md`.
+
+Dans cette option, l’application APILD serait déployée intégralement sur AWS, sans dépendance Render ni Aiven :
 
 - **AWS Amplify Hosting** héberge le frontend React statique ;
 - **AWS App Runner** exécute l’API Express ;

@@ -52,4 +52,5 @@ Documentation complementaire :
 - `docs/CONFIGURATION.md` : variables d'environnement et controles avant production ;
 - `docs/FRONTEND.md` : architecture React, routes et commandes ;
 - `docs/DATABASE.md` : securisation et exploitation MariaDB.
-- `docs/DEPLOYMENT_AWS.md` : déploiement intégral AWS avec Amplify, App Runner, RDS, S3 et SES.
+- `docs/DEPLOYMENT_RENDER_AIVEN.md` : déploiement actuel prévu, avec deux services Render et MySQL Aiven ;
+- `docs/DEPLOYMENT_AWS.md` : ancienne option de déploiement intégral AWS, non utilisée pour le présent hébergement.
