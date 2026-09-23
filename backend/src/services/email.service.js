@@ -1,6 +1,8 @@
 const env = require('../config/env');
 const { getTransporter } = require('../config/mail');
 const logger = require('../utils/logger');
+const sanitize = require('../utils/sanitize');
+const { emailLayout, escapeHtml, plainText } = require('./emailTemplate');
 
 async function sendMail(options) {
   const transporter = getTransporter();
@@ -23,37 +25,72 @@ function sendPasswordReset(user, token) {
   const resetUrl = `${env.FRONTEND_URL}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
   return sendMail({
     to: user.email,
-    subject: 'Reinitialisation de votre mot de passe APILD',
-    text: `Bonjour ${user.first_name}, utilisez ce lien dans les 24 heures: ${resetUrl}`,
-    html: `<p>Bonjour ${user.first_name},</p><p><a href="${resetUrl}">Reinitialiser mon mot de passe</a></p><p>Ce lien expire dans 24 heures.</p>`
+    subject: 'Réinitialisation de votre mot de passe APILD',
+    text: `Bonjour ${user.first_name},\n\nUtilisez ce lien dans les 24 heures pour réinitialiser votre mot de passe : ${resetUrl}\n\nSi vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.`,
+    html: emailLayout({
+      eyebrow: 'Sécurité du compte',
+      title: 'Réinitialiser votre mot de passe',
+      preheader: 'Votre lien de réinitialisation APILD est valable 24 heures.',
+      body: `<p>Bonjour ${escapeHtml(user.first_name)},</p><p>Une demande de réinitialisation du mot de passe a été reçue pour votre compte APILD.</p>`,
+      calloutTitle: 'Lien valable 24 heures',
+      calloutBody: 'Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail : votre compte reste protégé.',
+      actionLabel: 'Choisir un nouveau mot de passe',
+      actionUrl: resetUrl
+    })
   });
 }
 
-function sendNewsletter(subscriber, newsletter) {
-  return sendMail({
+function unsubscribeUrl(subscriber) {
+  return subscriber.unsubscribe_token
+    ? `${env.FRONTEND_URL}/desabonnement?token=${encodeURIComponent(subscriber.unsubscribe_token)}`
+    : null;
+}
+
+async function sendNewsletter(subscriber, newsletter) {
+  const recipient = subscriber.first_name ? `Bonjour ${subscriber.first_name},` : 'Bonjour,';
+  const content = sanitize.richText(newsletter.content || '');
+  const result = await sendMail({
     to: subscriber.email,
     subject: newsletter.subject,
-    text: newsletter.preview_text || newsletter.subject,
-    html: newsletter.content
+    text: `${recipient}\n\n${newsletter.preview_text || plainText(content)}${unsubscribeUrl(subscriber) ? `\n\nSe désabonner : ${unsubscribeUrl(subscriber)}` : ''}`,
+    html: emailLayout({
+      eyebrow: 'La lettre APILD',
+      title: newsletter.subject,
+      preheader: newsletter.preview_text || newsletter.subject,
+      body: `<p>${escapeHtml(recipient)}</p>${content}`,
+      unsubscribeUrl: unsubscribeUrl(subscriber)
+    })
   });
+  return assertDelivery(result, subscriber.email, 'newsletter');
 }
 
-function escapeHtml(value) {
-  return String(value || '').replace(/[&<>'"]/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-  })[character]);
-}
-
-function plainText(value) {
-  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+function sendSubscriptionWelcome(subscriber) {
+  const name = subscriber.first_name ? ` ${subscriber.first_name}` : '';
+  const preferencesUrl = unsubscribeUrl(subscriber);
+  return sendMail({
+    to: subscriber.email,
+    subject: 'Bienvenue dans la newsletter APILD',
+    text: `Bonjour${name},\n\nVotre inscription à la newsletter APILD est enregistrée. Vous recevrez nos publications et informations sur les initiatives locales.${preferencesUrl ? `\n\nSe désabonner : ${preferencesUrl}` : ''}`,
+    html: emailLayout({
+      eyebrow: 'Inscription confirmée',
+      title: 'Bienvenue dans la communauté APILD',
+      preheader: 'Votre inscription à la newsletter est confirmée.',
+      body: `<p>Bonjour${escapeHtml(name)},</p><p>Votre inscription est bien enregistrée. Vous recevrez les nouvelles publications, les projets et les informations utiles d’APILD.</p>`,
+      calloutTitle: 'Vous gardez le contrôle',
+      calloutBody: 'Vous pouvez vous désabonner à tout moment depuis chaque e-mail.',
+      actionLabel: 'Découvrir APILD',
+      actionUrl: env.FRONTEND_URL,
+      unsubscribeUrl: preferencesUrl
+    })
+  });
 }
 
 function normalizeAddress(value) {
   return String(value || '').trim().toLowerCase();
 }
 
-function assertArticleDelivery(result, recipientEmail) {
-  if (result?.preview) throw new Error('SMTP non configuré : aucune publication n’a été envoyée');
+function assertDelivery(result, recipientEmail, kind = 'publication') {
+  if (result?.preview) throw new Error(`SMTP non configuré : aucune ${kind} n’a été envoyée`);
   const accepted = Array.isArray(result?.accepted) ? result.accepted.map(normalizeAddress) : [];
   const rejected = Array.isArray(result?.rejected) ? result.rejected.map(normalizeAddress) : [];
   if (rejected.length) throw new Error(`SMTP a refusé le destinataire : ${rejected.join(', ')}`);
@@ -66,18 +103,25 @@ function assertArticleDelivery(result, recipientEmail) {
 async function sendArticlePublication(subscriber, article) {
   const recipient = subscriber.first_name ? `Bonjour ${subscriber.first_name},` : 'Bonjour,';
   const articleUrl = `${env.FRONTEND_URL}/actualites/${encodeURIComponent(article.id)}`;
-  const unsubscribeUrl = subscriber.unsubscribe_token
-    ? `${env.FRONTEND_URL}/desabonnement?token=${encodeURIComponent(subscriber.unsubscribe_token)}`
-    : null;
-  const title = escapeHtml(article.title);
-  const excerpt = escapeHtml(plainText(article.excerpt || article.content).slice(0, 420));
+  const optOutUrl = unsubscribeUrl(subscriber);
+  const excerpt = plainText(article.excerpt || article.content).slice(0, 420);
   const result = await sendMail({
     to: subscriber.email,
     subject: `Nouvelle publication APILD : ${article.title}`,
-    text: `${recipient}\n\nUne nouvelle publication est disponible : ${article.title}\n${plainText(article.excerpt || article.content)}\n\nLire l’article : ${articleUrl}${unsubscribeUrl ? `\n\nSe désabonner : ${unsubscribeUrl}` : ''}`,
-    html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#173047"><p>${escapeHtml(recipient)}</p><p>Une nouvelle publication est disponible sur APILD.</p><h2 style="margin:0 0 10px;color:#063c48">${title}</h2><p>${excerpt}</p><p><a href="${articleUrl}" style="display:inline-block;padding:11px 16px;border-radius:8px;background:#087657;color:#fff;text-decoration:none;font-weight:700">Lire l’article</a></p>${unsubscribeUrl ? `<p style="margin-top:24px;font-size:12px;color:#5f6f78">Vous ne souhaitez plus recevoir ces nouvelles ? <a href="${unsubscribeUrl}" style="color:#087657">Se désabonner</a></p>` : ''}</div>`
+    text: `${recipient}\n\nUne nouvelle publication est disponible : ${article.title}\n${excerpt}\n\nLire l’article : ${articleUrl}${optOutUrl ? `\n\nSe désabonner : ${optOutUrl}` : ''}`,
+    html: emailLayout({
+      eyebrow: 'Nouvel article',
+      title: article.title,
+      preheader: excerpt,
+      body: `<p>${escapeHtml(recipient)}</p><p>Une nouvelle publication APILD est disponible.</p>`,
+      calloutTitle: 'À lire sur APILD',
+      calloutBody: excerpt,
+      actionLabel: 'Lire l’article',
+      actionUrl: articleUrl,
+      unsubscribeUrl: optOutUrl
+    })
   });
-  return assertArticleDelivery(result, subscriber.email);
+  return assertDelivery(result, subscriber.email);
 }
 
-module.exports = { sendMail, sendPasswordReset, sendNewsletter, sendArticlePublication };
+module.exports = { sendMail, sendPasswordReset, sendNewsletter, sendSubscriptionWelcome, sendArticlePublication };

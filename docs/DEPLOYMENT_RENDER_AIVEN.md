@@ -25,6 +25,10 @@ Le site reçoit automatiquement l’URL publique de l’API via `VITE_API_ORIGIN
 
 Le compte manager est `sagelusenge@gmail.com`. Son mot de passe initial est `ADMIN_INITIAL_PASSWORD` dans les variables secrètes de Render et doit être remplacé dès la première connexion. Si l’ancien compte utilisait encore le mot de passe de démonstration, il est automatiquement réinitialisé au démarrage. Un mot de passe déjà changé n’est pas écrasé.
 
+Pour le premier accès, ouvrir **Render > apild-api > Environment**, afficher puis copier `ADMIN_INITIAL_PASSWORD` sans le partager. Se connecter sur `https://apild-web.onrender.com/connexion` avec l'adresse du manager et ce secret ; l'application demande ensuite un nouveau mot de passe fort. Le mot de passe de démonstration ne fonctionne pas en production. Si l'API gratuite était en veille, attendre son réveil (jusqu'à environ une minute) puis réessayer. Si le mot de passe personnel a déjà été changé, `ADMIN_INITIAL_PASSWORD` ne le remplace plus : utiliser le nouveau mot de passe ou la récupération par e-mail, après configuration SMTP.
+
+Les e-mails APILD (code de réinitialisation, invitation, réunion, échéance de projet, newsletter et nouvel article) utilisent un modèle commun. Sans SMTP configuré, aucun e-mail réel ne part. Les invitations et rappels placés dans la file exigent en plus un traitement des tâches de fond ; `ENABLE_JOBS=false` dans le Blueprint gratuit, car sa mise en veille rend les rappels horaires peu fiables.
+
 ## Limites importantes du plan gratuit
 
 Le Web Service gratuit se met en veille et son système de fichiers local est éphémère. Les images, avatars et documents téléversés dans `backend/uploads` ne sont donc **pas persistants** après redéploiement. Les rappels par tâche de fond ne sont pas fiables sur un service qui se met en veille. Pour une exploitation réelle, prévoir un stockage objet persistant et un service qui tourne en continu ; ne pas annoncer ces fonctions comme garanties sur cette configuration de démonstration.

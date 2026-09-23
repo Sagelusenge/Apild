@@ -11,7 +11,7 @@ function asWholeNumber(value) {
  * It only runs after the value is supplied by the public API and honours the
  * visitor's reduced-motion preference.
  */
-export default function ImpactStat({ value, label, locale, delay = 0 }) {
+export default function ImpactStat({ value, label, locale, icon: Icon, delay = 0 }) {
   const target = asWholeNumber(value);
   const hostRef = useRef(null);
   const frameRef = useRef();
@@ -49,13 +49,14 @@ export default function ImpactStat({ value, label, locale, delay = 0 }) {
     }
 
     let startedAt;
-    const duration = Math.min(980, Math.max(520, 530 + Math.log10(target + 1) * 120));
-    const easeOut = (progress) => 1 - ((1 - progress) ** 4);
+    // A short linear ramp keeps the intermediate numbers visible instead of
+    // jumping almost immediately to the final value.
+    const duration = Math.min(2600, Math.max(850, target * 24));
 
     const draw = (timestamp) => {
       if (!startedAt) startedAt = timestamp;
       const progress = Math.min((timestamp - startedAt) / duration, 1);
-      setDisplayValue(Math.round(target * easeOut(progress)));
+      setDisplayValue(progress === 1 ? target : Math.floor(target * progress));
       if (progress < 1) frameRef.current = window.requestAnimationFrame(draw);
     };
 
@@ -75,7 +76,7 @@ export default function ImpactStat({ value, label, locale, delay = 0 }) {
     : new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(displayValue);
 
   return <Reveal as="div" className="stat-tile" delay={delay}>
-    <span className="stat-tile__brand" aria-hidden="true"><img src="/images/logo-apild.png" alt="" /></span>
+    <span className="stat-tile__icon" aria-hidden="true">{Icon && <Icon size={24} strokeWidth={2} />}</span>
     <strong ref={hostRef} aria-label={target === null ? label : `${new Intl.NumberFormat(locale).format(target)} ${label}`}>
       <span aria-hidden="true">{formattedValue}</span>
     </strong>

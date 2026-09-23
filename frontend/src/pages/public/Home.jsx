@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, BookOpen, Building2, GraduationCap, Handshake, HeartHandshake, Leaf, Sprout, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Building2, ClipboardCheck, FolderKanban, GraduationCap, Handshake, HeartHandshake, Leaf, Sprout, Users, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../../components/public/Hero';
 import ProjectCard from '../../components/public/ProjectCard';
@@ -14,6 +14,7 @@ import Reveal from '../../components/public/Reveal';
 import ImpactStat from '../../components/public/ImpactStat';
 
 const domainIcons = [HeartHandshake, Building2, GraduationCap, Leaf, Users, Handshake];
+const impactIcons = [FolderKanban, UsersRound, ClipboardCheck, Handshake];
 
 export default function Home() {
   const { language, text } = useUi();
@@ -39,7 +40,7 @@ export default function Home() {
 
   return <>
     <Hero />
-    <section className="stats-strip" aria-label={text.home.stats.join(', ')}><div className="container stats-grid">{text.home.stats.map((label, index) => <ImpactStat key={label} value={impactValues[index]} label={label} locale={locale} delay={Math.min(index, 3) * 70} />)}</div></section>
+    <section className="stats-strip" aria-label={text.home.stats.join(', ')}><div className="container stats-grid">{text.home.stats.map((label, index) => <ImpactStat key={label} value={impactValues[index]} label={label} locale={locale} icon={impactIcons[index]} delay={Math.min(index, 3) * 70} />)}</div></section>
 
     <section className="section"><Reveal as="div" className="container about-panel card">
       <div><span className="eyebrow">{text.home.aboutEyebrow}</span><h2>{text.home.aboutTitle}</h2><p>{text.home.aboutText}</p><Link to="/a-propos">{text.home.aboutLink} <ArrowRight size={17} /></Link></div>

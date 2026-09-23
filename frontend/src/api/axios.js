@@ -4,7 +4,8 @@ const apiOrigin = import.meta.env.VITE_API_ORIGIN?.replace(/\/$/, '');
 const API_URL = apiOrigin ? `${apiOrigin}/api` : (import.meta.env.VITE_API_URL || 'http://localhost:4000/api');
 const storage = sessionStorage;
 
-export const api = axios.create({ baseURL: API_URL, timeout: 15000 });
+// Render's free API can need up to about a minute to wake after inactivity.
+export const api = axios.create({ baseURL: API_URL, timeout: 75000 });
 
 api.interceptors.request.use((config) => {
   const token = storage.getItem('apild_access_token');
@@ -44,6 +45,7 @@ api.interceptors.response.use(
 );
 
 export const unwrap = (request) => request.then((response) => response.data.data);
-export const getApiMessage = (error, fallback = 'Une erreur est survenue') => (
-  error.response?.data?.error?.message || error.response?.data?.message || fallback
-);
+export const getApiMessage = (error, fallback = 'Une erreur est survenue') => {
+  if (error.code === 'ECONNABORTED') return 'Le serveur met du temps à démarrer. Veuillez réessayer dans quelques instants.';
+  return error.response?.data?.error?.message || error.response?.data?.message || fallback;
+};

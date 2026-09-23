@@ -40,3 +40,31 @@ describe('email de publication', () => {
     }));
   });
 });
+
+describe('emails de la newsletter APILD', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test('ne marque pas une newsletter comme envoyée si SMTP est absent', async () => {
+    getTransporter.mockReturnValue(null);
+    await expect(emailService.sendNewsletter(subscriber, {
+      subject: 'Nouvelles APILD', content: '<p>Actualités des projets.</p>'
+    })).rejects.toThrow('SMTP non configuré');
+  });
+
+  test('utilise la même présentation pour la newsletter et le message de bienvenue', async () => {
+    const transporter = { sendMail: jest.fn().mockResolvedValue({ accepted: [subscriber.email], rejected: [] }) };
+    getTransporter.mockReturnValue(transporter);
+
+    await emailService.sendNewsletter(subscriber, {
+      subject: 'Nouvelles APILD', preview_text: 'Des nouvelles du terrain', content: '<p>Actualités des projets.</p>'
+    });
+    await emailService.sendSubscriptionWelcome(subscriber);
+
+    expect(transporter.sendMail).toHaveBeenCalledTimes(2);
+    for (const [message] of transporter.sendMail.mock.calls) {
+      expect(message.html).toContain('APILD');
+      expect(message.html).toContain('/desabonnement?token=');
+      expect(message.html).toContain('bgcolor="#123262"');
+    }
+  });
+});

@@ -12,15 +12,20 @@ const subscribers=createService(repository.subscribers,{entityName:'Abonne'});
 async function send(id){
  const newsletter=await base.get(id);
  if(!['draft','scheduled','sending'].includes(newsletter.status))throw new AppError('Cette newsletter ne peut plus etre envoyee',409,'INVALID_STATUS');
- const list=await repository.activeSubscribers();
+ const list=await repository.activeSubscribers(id);
  await repository.setStatus(id,'sending');
  let sent=0,failed=0;
  for(const subscriber of list){
   await repository.prepareRecipient(id,subscriber.id);
-  try{await emailService.sendNewsletter(subscriber,newsletter);await repository.delivery(id,subscriber.id,'sent');sent++;}
+  try{
+   const token=subscriber.unsubscribe_token||await repository.ensureUnsubscribeToken(subscriber.id);
+   if(!token)throw new Error('Lien de désabonnement indisponible');
+   await emailService.sendNewsletter({...subscriber,unsubscribe_token:token},newsletter);
+   await repository.delivery(id,subscriber.id,'sent');sent++;
+  }
   catch(error){await repository.delivery(id,subscriber.id,'failed',error.message.slice(0,500));failed++;}
  }
- await repository.setStatus(id,'sent');
+ await repository.setStatus(id,failed?'sending':'sent');
  return {recipients:list.length,sent,failed};
 }
 async function unsubscribe(token){
@@ -31,6 +36,12 @@ const clean=(payload)=>({...payload,subject:sanitize.text(payload.subject),previ
 async function subscribe(payload){
  const {subscriber,wasNew}=await repository.subscribe(payload);
  if(wasNew){
+  try{
+   const token=subscriber.unsubscribe_token||await repository.ensureUnsubscribeToken(subscriber.id);
+   if(token)await emailService.sendSubscriptionWelcome({...subscriber,unsubscribe_token:token});
+  }catch(error){
+   logger.warn({err:error},'Impossible d envoyer le message de bienvenue newsletter');
+  }
   try{
    await notificationService.createForRoles(['communication'],{
     notification_type:'newsletter_subscription',
@@ -44,7 +55,7 @@ async function subscribe(payload){
    logger.warn({err:error},'Impossible de créer la notification d abonnement newsletter');
   }
  }
- return subscriber;
+ return {id:subscriber.id,email:subscriber.email,status:subscriber.status};
 }
 module.exports={...base,subscribers,subscribe,unsubscribe,send,
  create:(payload,user)=>base.create(clean(payload),user),

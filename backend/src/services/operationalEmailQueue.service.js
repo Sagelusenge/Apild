@@ -1,13 +1,8 @@
 const env = require('../config/env');
 const emailService = require('./email.service');
+const { emailLayout, escapeHtml } = require('./emailTemplate');
 const repository = require('./operationalEmailQueue.repository');
 const logger = require('../utils/logger');
-
-function escapeHtml(value) {
-  return String(value || '').replace(/[&<>'"]/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-  })[character]);
-}
 
 function personName(person) {
   return [person?.first_name, person?.last_name].filter(Boolean).join(' ').trim() || 'collaborateur APILD';
@@ -18,13 +13,6 @@ function displayDateTime(value) {
   if (!parts) return String(value || 'à confirmer');
   const [, year, month, day, hour, minute] = parts;
   return `${day}/${month}/${year} à ${hour}:${minute}`;
-}
-
-function emailLayout({ eyebrow, title, body, actionLabel, actionUrl, footer = 'Action pour la Promotion des Initiatives Locales de Développement' }) {
-  const cta = actionLabel && actionUrl
-    ? `<p style="margin:28px 0"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;border-radius:10px;padding:13px 19px;background:#087657;color:#ffffff;font-weight:700;text-decoration:none">${escapeHtml(actionLabel)}</a></p>`
-    : '';
-  return `<!doctype html><html lang="fr"><body style="margin:0;padding:0;background:#eef5f2;color:#173047;font-family:Arial,Helvetica,sans-serif"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:28px 12px"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 12px 36px rgba(10,57,48,.12)"><tr><td style="padding:22px 30px;background:linear-gradient(120deg,#075842,#087657)"><p style="margin:0;color:#bff3dd;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase">APILD · ${escapeHtml(eyebrow)}</p><h1 style="margin:9px 0 0;color:#ffffff;font-size:26px;line-height:1.25">${escapeHtml(title)}</h1></td></tr><tr><td style="padding:30px;font-size:16px;line-height:1.65">${body}${cta}</td></tr><tr><td style="padding:18px 30px;border-top:1px solid #dce9e3;color:#6b7c82;font-size:12px;line-height:1.5">${escapeHtml(footer)}</td></tr></table></td></tr></table></body></html>`;
 }
 
 function eventDetails(event) {
