@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardList, FileClock, FolderKanban, LayoutDashboard, ShieldCheck, Users } from 'lucide-react';
+import { CalendarDays, ClipboardList, FileClock, FolderKanban, HeartPulse, LayoutDashboard, ShieldCheck, Users } from 'lucide-react';
 import { useUi } from '../context/UiContext';
 import PortalLayout from './PortalLayout';
 export default function AdminLayout() {
@@ -7,6 +7,7 @@ export default function AdminLayout() {
   const items = [
     { to: '/admin', label: adminNav.dashboard, icon: LayoutDashboard },
     { to: '/admin/projets', label: managerNav.projects, icon: FolderKanban },
+    { to: '/admin/interventions', label: managerNav.interventions, icon: HeartPulse },
     { to: '/admin/taches', label: managerNav.tasks, icon: ClipboardList },
     { to: '/admin/calendrier', label: managerNav.calendar, icon: CalendarDays },
     { to: '/admin/equipe', label: managerNav.team, icon: Users },

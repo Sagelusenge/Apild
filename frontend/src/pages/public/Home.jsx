@@ -41,7 +41,7 @@ export default function Home() {
 
   return <>
     <Hero />
-    <section className="stats-strip" aria-label={text.home.stats.join(', ')}><div className="container stats-grid">{text.home.stats.map((label, index) => <ImpactStat key={label} value={impactValues[index]} label={label} locale={locale} icon={impactIcons[index]} delay={Math.min(index, 3) * 70} />)}</div>{Number(impact?.demo_interventions) > 0 && <p className="container impact-demo-note">{language === 'fr' ? 'Ces indicateurs comprennent des données de démonstration, non vérifiées comme résultats de terrain.' : language === 'sw' ? 'Viashiria hivi vinajumuisha data ya majaribio, si matokeo yaliyothibitishwa ya eneo.' : 'These indicators include demonstration data, not verified field results.'}</p>}</section>
+    <section className="stats-strip" aria-label={text.home.stats.join(', ')}><div className="container stats-grid">{text.home.stats.map((label, index) => <ImpactStat key={label} value={impactValues[index]} label={label} locale={locale} icon={impactIcons[index]} delay={Math.min(index, 3) * 70} />)}</div></section>
 
     <section className="section"><Reveal as="div" className="container about-panel card">
       <div><span className="eyebrow">{text.home.aboutEyebrow}</span><h2>{text.home.aboutTitle}</h2><p>{text.home.aboutText}</p><Link to="/a-propos">{text.home.aboutLink} <ArrowRight size={17} /></Link></div>

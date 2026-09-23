@@ -7,13 +7,13 @@ Ce guide est organisé par acteur, puis par action. Les droits sont contrôlés 
 ### Consulter les informations
 
 - **Accueil** : présente APILD, les projets, les actualités et les indicateurs issus de la base de données. Les quatre chiffres sont les projets actifs ou terminés, la somme des bénéficiaires déclarés dans les interventions terminées, le nombre d’interventions terminées et les partenaires actifs.
-- **À propos** : présente l’histoire, les valeurs et les objectifs de l’organisation.
+- **À propos** : présente l’histoire, les valeurs, les objectifs et les partenaires actifs enregistrés dans la base de données. Les trois fiches initiales sont des exemples de démonstration, pas des partenariats à présenter comme confirmés.
 - **Projets** : ouvre la liste et la fiche de chaque projet publié. La barre en pourcentage représente **le temps écoulé entre la date de début et la date de fin prévues**, pas le pourcentage des travaux réellement achevés. Un projet terminé affiche 100 % ; un projet sans dates exploitables affiche 0 %.
 - **Interventions** : présente les actions achevées et leur domaine.
 - **Actualités** : ouvre les articles publiés. Une fiche permet d’aimer, de commenter et de partager l’article, et de consulter ses documents PDF/Word joints lorsqu’il y en a.
 - **Contact** : transmet un message à APILD.
 
-Les entrées `INT-DEMO-001` et `INT-DEMO-002` actuellement présentes dans la base sont des **données de démonstration**. Leurs bénéficiaires déclarés sont respectivement `45 + 52 + 80 = 177` et `63 + 89 + 24 = 176`, soit **353** au total. Ce total ne constitue pas un bilan terrain vérifié. La page d’accueil le signale tant que ces entrées figurent parmi les statistiques.
+Les entrées `INT-DEMO-001` et `INT-DEMO-002` actuellement présentes dans la base sont des **données de démonstration**. Leurs bénéficiaires déclarés sont respectivement `45 + 52 + 80 = 177` et `63 + 89 + 24 = 176`, soit **353** au total. Ce total ne constitue pas un bilan terrain vérifié. La page d’accueil n’affiche plus d’avertissement ; remplacez ces entrées avant une présentation officielle.
 
 ### Choisir la langue et l’apparence
 
@@ -36,6 +36,10 @@ Le **Tableau de bord** réunit les comptes, tâches, projets actifs, retards, gr
 ### Gérer les projets
 
 Dans **Projets**, créez une fiche avec un nom, un statut, des dates, un responsable et, si nécessaire, un budget et une zone. La référence est générée automatiquement. Utilisez les filtres et la recherche pour retrouver une fiche ; l’action de modification corrige ses données. Le pourcentage affiché est calculé automatiquement à partir du calendrier et ne se saisit pas à la main. Pour mesurer l’exécution réelle, renseignez les interventions et les livrables : ne confondez pas le temps écoulé avec les travaux réalisés.
+
+### Documenter une intervention
+
+Dans **Interventions**, cliquez sur **Ajouter une intervention**. Saisissez un intitulé (par exemple « Dépistage communautaire »), choisissez le domaine **Santé**, indiquez la date et, si besoin, la localité, le projet associé et le nombre de bénéficiaires. Le projet est facultatif et la référence `INT-…` est générée automatiquement. Laissez le statut **Planifié** ou **En cours** tant que l’activité n’est pas terminée. Seules les interventions au statut **Terminé** apparaissent sur le site public et alimentent les totaux de bénéficiaires.
 
 ### Gérer les tâches
 
@@ -90,6 +94,6 @@ Les fonctions dépendantes des e-mails sont volontairement désactivées (`EMAIL
 ## 6. Conseils de qualité des données
 
 - Ne déclarez les bénéficiaires que pour des interventions réelles et vérifiées ; le total public additionne hommes, femmes et enfants des interventions **terminées**.
-- Ne laissez pas une référence contenant `DEMO` dans un bilan destiné à un client sans la remplacer par une donnée vérifiée ; le site affiche un avertissement tant que de telles interventions contribuent aux indicateurs.
+- Ne laissez pas une référence contenant `DEMO` dans un bilan destiné à un client sans la remplacer par une donnée vérifiée. Les indicateurs publics additionnent actuellement ces enregistrements et n’affichent plus d’avertissement à l’écran : vérifiez les données avant toute présentation officielle.
 - Le pourcentage d’un projet est un indicateur **calendaire**, non une preuve d’exécution physique ou budgétaire.
 - Après toute publication ou modification importante, vérifiez le rendu public et les droits des comptes concernés.

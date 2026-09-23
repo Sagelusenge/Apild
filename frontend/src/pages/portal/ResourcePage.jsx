@@ -19,6 +19,7 @@ const actionPermissions = {
   users: { create: 'users.create', update: 'users.update', delete: 'users.delete' },
   roles: { create: 'roles.manage', update: 'roles.manage', delete: 'roles.manage' },
   projects: { create: 'projects.create', update: 'projects.update', delete: 'projects.delete' },
+  interventions: { create: 'interventions.manage', update: 'interventions.manage', delete: 'interventions.manage' },
   tasks: { create: 'tasks.create', update: 'tasks.update', delete: 'tasks.delete' },
   events: { create: 'events.manage', update: 'events.manage', delete: 'events.manage' },
   reports: { create: 'reports.manage', update: 'reports.manage', delete: 'reports.manage' },
@@ -52,6 +53,10 @@ const getSources = (form) => [...new Set((form?.fields || []).map((field) => fie
 async function loadLookup(source) {
   if (source === 'permissions') return unwrap(api.get('/roles/permissions'));
   if (source === 'articleCategories') return unwrap(api.get('/articles/categories', { params: { limit: 100 } }));
+  if (source === 'interventionDomains') {
+    const result = await resourceApi.list('interventions/domains', { page: 1, limit: 100, sortBy: 'name', sortOrder: 'asc' });
+    return Array.isArray(result.data) ? result.data.filter((domain) => Boolean(Number(domain.is_active))) : [];
+  }
 
   const resources = { roles: 'roles', users: 'users', projects: 'projects', tasks: 'tasks', articles: 'articles' };
   const resource = resources[source];
