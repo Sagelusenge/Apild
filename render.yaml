@@ -52,6 +52,8 @@ services:
         value: "false"
       - key: ENABLE_JOBS
         value: "false"
+      - key: EMAIL_FEATURES_ENABLED
+        value: "false"
   - type: web
     name: apild-web
     runtime: static
@@ -69,3 +71,5 @@ services:
           type: web
           name: apild-api
           envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_EMAIL_FEATURES_ENABLED
+        value: "false"

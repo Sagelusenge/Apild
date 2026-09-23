@@ -12,6 +12,7 @@ import { useUi } from '../../context/UiContext';
 import { NEWS_IMAGES, PROJECT_IMAGES } from '../../data/siteMedia';
 import Reveal from '../../components/public/Reveal';
 import ImpactStat from '../../components/public/ImpactStat';
+import { emailFeaturesEnabled } from '../../config/features';
 
 const domainIcons = [HeartHandshake, Building2, GraduationCap, Leaf, Users, Handshake];
 const impactIcons = [FolderKanban, UsersRound, ClipboardCheck, Handshake];
@@ -40,7 +41,7 @@ export default function Home() {
 
   return <>
     <Hero />
-    <section className="stats-strip" aria-label={text.home.stats.join(', ')}><div className="container stats-grid">{text.home.stats.map((label, index) => <ImpactStat key={label} value={impactValues[index]} label={label} locale={locale} icon={impactIcons[index]} delay={Math.min(index, 3) * 70} />)}</div></section>
+    <section className="stats-strip" aria-label={text.home.stats.join(', ')}><div className="container stats-grid">{text.home.stats.map((label, index) => <ImpactStat key={label} value={impactValues[index]} label={label} locale={locale} icon={impactIcons[index]} delay={Math.min(index, 3) * 70} />)}</div>{Number(impact?.demo_interventions) > 0 && <p className="container impact-demo-note">{language === 'fr' ? 'Ces indicateurs comprennent des données de démonstration, non vérifiées comme résultats de terrain.' : language === 'sw' ? 'Viashiria hivi vinajumuisha data ya majaribio, si matokeo yaliyothibitishwa ya eneo.' : 'These indicators include demonstration data, not verified field results.'}</p>}</section>
 
     <section className="section"><Reveal as="div" className="container about-panel card">
       <div><span className="eyebrow">{text.home.aboutEyebrow}</span><h2>{text.home.aboutTitle}</h2><p>{text.home.aboutText}</p><Link to="/a-propos">{text.home.aboutLink} <ArrowRight size={17} /></Link></div>
@@ -62,6 +63,6 @@ export default function Home() {
       {articles.length ? <div className="cards-3 news-cards">{articles.map((article, index) => <ArticleCard key={article.id} article={article} image={NEWS_IMAGES[index % NEWS_IMAGES.length]} delay={Math.min(index, 3) * 65} />)}</div> : <Reveal className="public-placeholder card"><BookOpen/><h3>{text.home.newsEmpty}</h3><p>{text.home.newsEmptyText}</p></Reveal>}
     </div></section>
 
-    <section className="newsletter-section"><Reveal as="div" className="container newsletter-panel"><div><span>{text.home.newsletterEyebrow}</span><h2>{text.home.newsletterTitle}</h2><p>{text.home.newsletterText}</p></div><NewsletterForm /></Reveal></section>
+    {emailFeaturesEnabled && <section className="newsletter-section"><Reveal as="div" className="container newsletter-panel"><div><span>{text.home.newsletterEyebrow}</span><h2>{text.home.newsletterTitle}</h2><p>{text.home.newsletterText}</p></div><NewsletterForm /></Reveal></section>}
   </>;
 }

@@ -17,6 +17,7 @@ module.exports = {
   refresh: z.object({ refreshToken: z.string().min(20) }).strict(),
   logout: z.object({ refreshToken: z.string().min(20).optional() }).strict(),
   forgotPassword: z.object({ email }).strict(),
+  verifyResetCode: z.object({ email, code: z.string().regex(/^\d{6}$/, 'Le code doit contenir exactement 6 chiffres') }).strict(),
   resetPassword: z.object({
     email: email.optional(),
     code: z.string().regex(/^\d{6}$/, 'Le code doit contenir exactement 6 chiffres').optional(),

@@ -26,6 +26,7 @@ function eventDetails(event) {
 }
 
 async function queueMessage(message) {
+  if (env.EMAIL_FEATURES_ENABLED === false) return { skipped: true };
   return repository.enqueue({ ...message, scheduledAt: message.scheduledAt || new Date() });
 }
 
@@ -106,18 +107,21 @@ function passwordResetCodeEmail(user, code) {
 }
 
 async function queueDueMeetingReminders() {
+  if (env.EMAIL_FEATURES_ENABLED === false) return 0;
   const recipients = await repository.meetingReminderRecipients();
   await Promise.all(recipients.map((entry) => queueMeetingReminder(entry, entry)));
   return recipients.length;
 }
 
 async function queueProjectsEndingSoon() {
+  if (env.EMAIL_FEATURES_ENABLED === false) return 0;
   const recipients = await repository.projectsEndingSoonRecipients();
   await Promise.all(recipients.map((entry) => queueProjectEndReminder(entry, entry)));
   return recipients.length;
 }
 
 async function deliverDue(limit = 25) {
+  if (env.EMAIL_FEATURES_ENABLED === false) return { scanned: 0, sent: 0, skipped: 0, failed: 0 };
   await repository.recoverStaleProcessing();
   const messages = await repository.due(limit);
   let sent = 0;

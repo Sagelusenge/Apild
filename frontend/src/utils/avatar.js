@@ -7,6 +7,7 @@ export function resolveAvatarUrl(value) {
   if (!url) return '';
   if (/^https?:\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url;
   if (url.startsWith('/uploads/')) return `${apiOrigin}${url}`;
+  if (url.startsWith('/api/auth/avatars/')) return `${apiOrigin}${url}`;
   if (url.startsWith('uploads/')) return `${apiOrigin}/${url}`;
   return url;
 }

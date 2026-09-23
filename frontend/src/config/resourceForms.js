@@ -160,6 +160,7 @@ export const resourceForms = {
       { name: 'excerpt', label: 'Extrait', type: 'textarea', layout: 'full' },
       { name: 'content', label: 'Contenu', type: 'textarea', required: true, layout: 'full' },
       { name: 'featured_image_file', label: 'Photo principale', type: 'file', accept: 'image/jpeg,image/png,image/webp,image/gif', allowOnEdit: true, layout: 'full', help: 'Choisissez une image depuis cet appareil. Elle sera associée à la publication.' },
+      { name: 'attachment_files', label: 'Pièces jointes PDF ou Word', type: 'file', accept: '.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', allowOnEdit: true, multiple: true, layout: 'full', help: 'Facultatif : sélectionnez un ou plusieurs documents à proposer en téléchargement avec cet article.' },
       { name: 'category_id', label: 'Catégorie', type: 'select', optionSource: 'articleCategories', optionLabel: 'category', layout: 'half' },
       { name: 'status', label: 'Statut', type: 'select', defaultValue: 'draft', options: options(['draft', 'review', 'published', 'archived']), layout: 'half' },
       { name: 'is_featured', label: 'Mettre en avant', type: 'checkbox', layout: 'half' },

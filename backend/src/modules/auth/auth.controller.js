@@ -25,10 +25,17 @@ module.exports = {
       throw error;
     }
   }),
+  avatarImage: asyncHandler(async (request, response) => {
+    const image = await service.getAvatarImage(request.params.key);
+    response.type(image.mime_type);
+    response.setHeader('cache-control', 'public, max-age=31536000, immutable');
+    return response.send(image.content);
+  }),
   forgotPassword: asyncHandler(async (request, response) => {
     await service.forgotPassword(request.body.email);
     return success(response, null, 'Si ce compte existe, un email de reinitialisation a ete envoye');
   }),
+  verifyResetCode: asyncHandler(async (request, response) => success(response, await service.verifyResetCode(request.body), 'Code vérifié')),
   resetPassword: asyncHandler(async (request, response) => {
     await service.resetPassword(request.body);
     return success(response, null, 'Mot de passe reinitialise');

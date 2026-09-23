@@ -50,6 +50,7 @@ const schema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(300),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
   ENABLE_JOBS: booleanFromString.default(false),
+  EMAIL_FEATURES_ENABLED: booleanFromString.default(process.env.NODE_ENV !== 'production'),
   TRUST_PROXY: z.string().default('false')
 });
 
@@ -73,10 +74,10 @@ if (parsed.data.NODE_ENV === 'production') {
   if (parsed.data.FILE_STORAGE === 's3' && (!parsed.data.S3_BUCKET.trim() || !parsed.data.S3_REGION.trim())) {
     throw new Error('S3_BUCKET et S3_REGION doivent etre configures lorsque FILE_STORAGE=s3.');
   }
-  if (parsed.data.SMTP_HOST && parsed.data.SMTP_AUTH_TYPE === 'password' && (!parsed.data.SMTP_PASSWORD || /change[_-]?me/i.test(parsed.data.SMTP_PASSWORD))) {
+  if (parsed.data.EMAIL_FEATURES_ENABLED && parsed.data.SMTP_HOST && parsed.data.SMTP_AUTH_TYPE === 'password' && (!parsed.data.SMTP_PASSWORD || /change[_-]?me/i.test(parsed.data.SMTP_PASSWORD))) {
     throw new Error('SMTP_PASSWORD doit etre configure en production');
   }
-  if (parsed.data.SMTP_HOST && parsed.data.SMTP_AUTH_TYPE === 'oauth2' && (!parsed.data.SMTP_USER || !parsed.data.SMTP_CLIENT_ID || (!parsed.data.SMTP_REFRESH_TOKEN && !parsed.data.SMTP_ACCESS_TOKEN))) {
+  if (parsed.data.EMAIL_FEATURES_ENABLED && parsed.data.SMTP_HOST && parsed.data.SMTP_AUTH_TYPE === 'oauth2' && (!parsed.data.SMTP_USER || !parsed.data.SMTP_CLIENT_ID || (!parsed.data.SMTP_REFRESH_TOKEN && !parsed.data.SMTP_ACCESS_TOKEN))) {
     throw new Error('La configuration SMTP OAuth2 est incomplete');
   }
 }

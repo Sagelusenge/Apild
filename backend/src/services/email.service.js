@@ -5,6 +5,7 @@ const sanitize = require('../utils/sanitize');
 const { emailLayout, escapeHtml, plainText } = require('./emailTemplate');
 
 async function sendMail(options) {
+  if (env.EMAIL_FEATURES_ENABLED === false) return { accepted: [], preview: true, suppressed: true };
   const transporter = getTransporter();
   // Database integration tests use real-looking recipient addresses.  Never
   // permit that test suite to contact a real SMTP transport, even if a

@@ -1,5 +1,6 @@
 import { BarChart3, Eye, FileText, Mail, MousePointerClick, Newspaper, Send, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { emailFeaturesEnabled } from '../../config/features';
 
 const COPY = {
   fr: {
@@ -73,7 +74,7 @@ export default function CommunicationInsights({ stats = {}, language = 'fr', for
       <StatCard label={copy.views} value={formatNumber.format(count(stats.page_views_30_days))} hint={copy.viewsHint} icon={Eye} />
       <StatCard label={copy.visitors} value={formatNumber.format(count(stats.visitors_30_days))} hint={copy.visitorsHint} icon={UsersRound} tone="blue" />
       <StatCard label={copy.clicks} value={formatNumber.format(count(stats.clicks_30_days))} hint={copy.clicksHint} icon={MousePointerClick} tone="gold" />
-      <StatCard label={copy.newSubscribers} value={formatNumber.format(count(stats.subscriptions_current_month))} hint={`${formatNumber.format(count(stats.subscriptions_last_two_months))} · ${copy.lastTwoMonths}`} icon={Mail} />
+      {emailFeaturesEnabled && <StatCard label={copy.newSubscribers} value={formatNumber.format(count(stats.subscriptions_current_month))} hint={`${formatNumber.format(count(stats.subscriptions_last_two_months))} · ${copy.lastTwoMonths}`} icon={Mail} />}
     </section>
 
     <section className="communication-analytics-grid">
@@ -81,8 +82,8 @@ export default function CommunicationInsights({ stats = {}, language = 'fr', for
       <article className="communication-panel card"><header className="communication-panel-heading"><span className="communication-panel-icon communication-panel-icon--gold"><MousePointerClick size={19} /></span><div><h2>{copy.clicksTitle}</h2><p>{copy.clicksSubtitle}</p></div></header><RankedList rows={stats.click_targets || []} kind="clicks" copy={copy} formatNumber={formatNumber} /></article>
     </section>
 
-    <section className="communication-summary-grid">
-      <article className="communication-panel card communication-panel--newsletter"><header className="communication-panel-heading"><span className="communication-panel-icon"><Send size={19} /></span><div><h2>{copy.audienceTitle}</h2><p>{copy.audienceSubtitle}</p></div></header><SubscriptionBars stats={stats} copy={copy} formatNumber={formatNumber} /><footer className="communication-panel-footer"><span>{copy.lastTwoMonths}</span><strong>{formatNumber.format(count(stats.subscriptions_last_two_months))}</strong><span>{copy.activeSubscribers}</span><strong>{formatNumber.format(count(stats.active_subscribers))}</strong></footer><Link className="communication-panel-link" to="/communication/abonnes">{copy.manageNewsletter} <UsersRound size={15} /></Link></article>
+    <section className={`communication-summary-grid${emailFeaturesEnabled ? '' : ' communication-summary-grid--single'}`}>
+      {emailFeaturesEnabled && <article className="communication-panel card communication-panel--newsletter"><header className="communication-panel-heading"><span className="communication-panel-icon"><Send size={19} /></span><div><h2>{copy.audienceTitle}</h2><p>{copy.audienceSubtitle}</p></div></header><SubscriptionBars stats={stats} copy={copy} formatNumber={formatNumber} /><footer className="communication-panel-footer"><span>{copy.lastTwoMonths}</span><strong>{formatNumber.format(count(stats.subscriptions_last_two_months))}</strong><span>{copy.activeSubscribers}</span><strong>{formatNumber.format(count(stats.active_subscribers))}</strong></footer><Link className="communication-panel-link" to="/communication/abonnes">{copy.manageNewsletter} <UsersRound size={15} /></Link></article>}
       <article className="communication-panel card communication-panel--editorial"><header className="communication-panel-heading"><span className="communication-panel-icon communication-panel-icon--blue"><Newspaper size={19} /></span><div><h2>{copy.publicationTitle}</h2><p>{copy.publicationSubtitle}</p></div></header><div className="communication-editorial-number"><strong>{formatNumber.format(count(stats.published_articles))}</strong><div><span>{copy.online}</span><small>{formatNumber.format(count(stats.published_current_month))} {copy.publishedThisMonth}</small></div></div><div className="communication-editorial-status"><span><FileText size={15} /> {copy.drafts}<strong>{formatNumber.format(count(stats.draft_articles))}</strong></span><span><FileText size={15} /> {copy.review}<strong>{formatNumber.format(count(stats.review_articles))}</strong></span></div><Link className="communication-panel-link" to="/communication/articles">{copy.manageArticles} <Newspaper size={15} /></Link></article>
     </section>
   </>;

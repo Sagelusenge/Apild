@@ -68,6 +68,23 @@ async function updateAvatar(userId, avatarUrl) {
   return result.affectedRows > 0;
 }
 
+async function saveAvatarContent(userId, publicKey, mimeType, content) {
+  return db.transaction(async (connection) => {
+    await connection.execute(
+      `INSERT INTO user_avatar_images (user_id, public_key, mime_type, content)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE public_key=VALUES(public_key), mime_type=VALUES(mime_type), content=VALUES(content)`,
+      [userId, publicKey, mimeType, content]
+    );
+    await connection.execute('UPDATE users SET avatar_url=? WHERE id=? AND deleted_at IS NULL', [`/api/auth/avatars/${publicKey}`, userId]);
+  });
+}
+
+async function getAvatarByKey(publicKey) {
+  const rows = await db.query('SELECT mime_type, content FROM user_avatar_images WHERE public_key=? LIMIT 1', [publicKey]);
+  return rows[0] || null;
+}
+
 function storeRefreshToken(userId, tokenHash, expiresAt, context) {
   return db.query(
     `INSERT INTO refresh_tokens (user_id, token_hash, expires_at, ip_address, user_agent)
@@ -185,7 +202,7 @@ async function changePassword(userId, passwordHash) {
 
 module.exports = {
   findUserByEmail, findUserById, getAccess, createStaffUser, updateLastLogin,
-  updateProfile, updateAvatar,
+  updateProfile, updateAvatar, saveAvatarContent, getAvatarByKey,
   storeRefreshToken, findRefreshToken, revokeRefreshToken, revokeAllUserTokens,
   createPasswordResetToken, createPasswordResetCode,
   findPasswordResetToken, findPasswordResetCode, recordPasswordResetCodeFailure,

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const fs = require('fs/promises');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const env = require('../../config/env');
@@ -100,6 +101,15 @@ async function updateAvatar(user, file) {
   const currentUser = await repository.findUserById(user.id);
   if (!currentUser) throw new AppError('Compte introuvable ou inactif', 404, 'NOT_FOUND');
 
+  if (env.NODE_ENV === 'production' && env.FILE_STORAGE === 'local') {
+    const content = file.buffer || await fs.readFile(file.path);
+    const publicKey = crypto.randomUUID();
+    await repository.saveAvatarContent(user.id, publicKey, file.mimetype, content);
+    if (file.path) await fs.unlink(file.path).catch(() => undefined);
+    if (isManagedAvatar(currentUser.avatar_url)) await fileService.remove(currentUser.avatar_url).catch(() => undefined);
+    return withAccess(await repository.findUserById(user.id));
+  }
+
   const avatarUrl = `/uploads/images/avatars/${file.filename}`;
   await fileService.persistUpload(file, fileService.uploadRelativePath('images/avatars', file));
   const updated = await repository.updateAvatar(user.id, avatarUrl);
@@ -113,7 +123,15 @@ async function updateAvatar(user, file) {
   return withAccess(await repository.findUserById(user.id));
 }
 
+async function getAvatarImage(publicKey) {
+  if (!/^[0-9a-f-]{36}$/i.test(publicKey)) throw new AppError('Photo introuvable', 404, 'NOT_FOUND');
+  const image = await repository.getAvatarByKey(publicKey);
+  if (!image || !['image/jpeg', 'image/png', 'image/webp'].includes(image.mime_type)) throw new AppError('Photo introuvable', 404, 'NOT_FOUND');
+  return image;
+}
+
 async function forgotPassword(email) {
+  if (env.EMAIL_FEATURES_ENABLED === false) throw new AppError('La récupération par e-mail est indisponible sur cette version. Contactez votre administrateur.', 503, 'EMAIL_DISABLED');
   const user = await repository.findUserByEmail(email.toLowerCase());
   if (!user) return;
   const verificationCode = crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
@@ -128,13 +146,27 @@ async function forgotPassword(email) {
     // Password recovery is intentionally delivered immediately.  The code is
     // not placed in the general queue or logs, where a later retry could outlive
     // its short validity period.
-    await emailService.sendMail(operationalEmailQueue.passwordResetCodeEmail(user, verificationCode));
+    const delivery = await emailService.sendMail(operationalEmailQueue.passwordResetCodeEmail(user, verificationCode));
+    if (delivery?.preview || !delivery?.accepted?.length) throw new Error('SMTP n’a pas confirmé la remise du message');
   } catch (error) {
     logger.error({ err: error, userId: user.id }, 'Echec d envoi du code de reinitialisation');
+    throw new AppError('Le code ne peut pas être envoyé pour le moment. Réessayez plus tard ou contactez votre administrateur.', 503, 'RESET_EMAIL_UNAVAILABLE');
   }
 }
 
+async function verifyResetCode(payload) {
+  if (env.EMAIL_FEATURES_ENABLED === false) throw new AppError('La récupération par e-mail est indisponible.', 503, 'EMAIL_DISABLED');
+  const user = await repository.findUserByEmail(payload.email.toLowerCase());
+  const stored = user && await repository.findPasswordResetCode(user.id, hashToken(payload.code));
+  if (!stored) {
+    if (user) await repository.recordPasswordResetCodeFailure(user.id);
+    throw new AppError('Code invalide ou expiré. Vérifiez le code reçu par e-mail.', 422, 'INVALID_RESET_CODE');
+  }
+  return { verified: true };
+}
+
 async function resetPassword(payload) {
+  if (env.EMAIL_FEATURES_ENABLED === false) throw new AppError('La récupération par e-mail est indisponible.', 503, 'EMAIL_DISABLED');
   if (payload.token) {
     const stored = await repository.findPasswordResetToken(hashToken(payload.token));
     if (!stored) throw new AppError('Lien de reinitialisation invalide ou expire', 422, 'INVALID_RESET_TOKEN');
@@ -182,4 +214,4 @@ async function changePassword(user, payload, context) {
   };
 }
 
-module.exports = { register, login, refresh, logout, updateProfile, updateAvatar, forgotPassword, resetPassword, changePassword, getMe: withAccess };
+module.exports = { register, login, refresh, logout, updateProfile, updateAvatar, getAvatarImage, forgotPassword, verifyResetCode, resetPassword, changePassword, getMe: withAccess };

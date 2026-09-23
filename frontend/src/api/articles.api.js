@@ -5,6 +5,7 @@ export const articlesApi = {
   list: (params) => api.get('/articles', { params }).then((r) => r.data),
   engagement: (id, visitorId) => unwrap(api.get(`/articles/${id}/engagement`, { params: { visitor_id: visitorId } })),
   comments: (id, params = {}) => api.get(`/articles/${id}/comments`, { params }).then((r) => r.data),
+  attachments: (id) => unwrap(api.get(`/articles/${id}/attachments`)),
   createComment: (id, payload) => unwrap(api.post(`/articles/${id}/comments`, payload)),
   toggleLike: (id, visitorId) => unwrap(api.post(`/articles/${id}/like`, { visitor_id: visitorId })),
   recordShare: (id) => unwrap(api.post(`/articles/${id}/share`, {})),

@@ -6,10 +6,16 @@ const AppError=require('../../utils/AppError');
 const sanitize=require('../../utils/sanitize');
 const notificationService=require('../notifications/notification.service');
 const logger=require('../../utils/logger');
+const env=require('../../config/env');
+
+function ensureEmailEnabled(){
+ if(env.EMAIL_FEATURES_ENABLED===false)throw new AppError('La newsletter est désactivée sur cette version.',503,'EMAIL_DISABLED');
+}
 
 const base=createService(repository,config);
 const subscribers=createService(repository.subscribers,{entityName:'Abonne'});
 async function send(id){
+ ensureEmailEnabled();
  const newsletter=await base.get(id);
  if(!['draft','scheduled','sending'].includes(newsletter.status))throw new AppError('Cette newsletter ne peut plus etre envoyee',409,'INVALID_STATUS');
  const list=await repository.activeSubscribers(id);
@@ -34,6 +40,7 @@ async function unsubscribe(token){
 }
 const clean=(payload)=>({...payload,subject:sanitize.text(payload.subject),preview_text:sanitize.text(payload.preview_text),content:sanitize.richText(payload.content)});
 async function subscribe(payload){
+ ensureEmailEnabled();
  const {subscriber,wasNew}=await repository.subscribe(payload);
  if(wasNew){
   try{

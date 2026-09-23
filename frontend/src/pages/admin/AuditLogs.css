@@ -217,9 +217,12 @@
 
 .audit-detail__changes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
+
+.audit-detail__changes table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.audit-detail__changes th, .audit-detail__changes td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; overflow-wrap: anywhere; }
+.audit-detail__changes thead { color: var(--muted); background: var(--page); }
 
 .audit-detail__changes section {
   min-width: 0;

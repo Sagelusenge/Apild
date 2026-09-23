@@ -14,7 +14,11 @@ const actionNames = {
   login: 'Connexion',
   logout: 'Déconnexion',
   block: 'Blocage',
-  unblock: 'Déblocage'
+  unblock: 'Déblocage',
+  unpublish: 'Retrait du site public',
+  publish: 'Publication',
+  read: 'Consultation',
+  view: 'Consultation'
 };
 
 const entityNames = {
@@ -29,6 +33,25 @@ const entityNames = {
   subscriber: 'Abonné',
   task: 'Tâche',
   user: 'Utilisateur'
+};
+
+const fieldNames = {
+  name: 'Nom', title: 'Titre', first_name: 'Prénom', last_name: 'Nom', email: 'Adresse e-mail',
+  status: 'Statut', description: 'Description', content: 'Contenu', role_ids: 'Rôles',
+  permissions: 'Autorisations', project_id: 'Projet', article_id: 'Article',
+  starts_at: 'Début', ends_at: 'Fin', start_date: 'Date de début', end_date: 'Date de fin',
+  published_at: 'Date de publication', updated_at: 'Dernière modification',
+  job_title: 'Fonction', priority: 'Priorité', progress_percent: 'Temps écoulé (%)'
+};
+const hiddenField = (key) => /password|token|secret|authorization|credential|private_key/i.test(key);
+const friendlyField = (key) => fieldNames[key] || formatName(key);
+const friendlyValue = (value) => {
+  if (value === null || value === undefined || value === '') return 'Non renseigné';
+  if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
+  if (Array.isArray(value)) return value.length ? value.map(friendlyValue).join(', ') : 'Aucun';
+  if (typeof value === 'object') return 'Détails enregistrés';
+  const statuses = { draft: 'Brouillon', published: 'Publié', active: 'Actif', completed: 'Terminé', suspended: 'Bloqué', cancelled: 'Annulé', scheduled: 'Planifié' };
+  return statuses[value] || String(value);
 };
 
 const formatName = (value) => String(value || '')
@@ -68,12 +91,6 @@ function parseValues(value) {
   }
 }
 
-function jsonValue(value) {
-  const parsed = parseValues(value);
-  if (parsed === null) return 'Aucune donnée enregistrée.';
-  return typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2);
-}
-
 function summary(log) {
   const before = parseValues(log.old_values);
   const after = parseValues(log.new_values);
@@ -81,8 +98,19 @@ function summary(log) {
     ...(before && typeof before === 'object' && !Array.isArray(before) ? Object.keys(before) : []),
     ...(after && typeof after === 'object' && !Array.isArray(after) ? Object.keys(after) : [])
   ]);
-  if (!fields.size) return `${actionLabel(log.action)} de ${entityLabel(log.entity_type).toLowerCase()}.`;
-  return `${[...fields].slice(0, 3).map(formatName).join(', ')}${fields.size > 3 ? '…' : ''}`;
+  const safeFields = [...fields].filter((key) => !hiddenField(key));
+  if (!safeFields.length) return `${actionLabel(log.action)} · ${entityLabel(log.entity_type).toLowerCase()}`;
+  return `${safeFields.slice(0, 3).map(friendlyField).join(', ')}${safeFields.length > 3 ? '…' : ''}`;
+}
+
+function changes(log) {
+  const before = parseValues(log.old_values);
+  const after = parseValues(log.new_values);
+  if (!before && !after) return [];
+  if (typeof before !== 'object' || typeof after !== 'object') return [];
+  return [...new Set([...Object.keys(before || {}), ...Object.keys(after || {})])]
+    .filter((key) => !hiddenField(key) && JSON.stringify(before?.[key]) !== JSON.stringify(after?.[key]))
+    .map((key) => ({ key, before: friendlyValue(before?.[key]), after: friendlyValue(after?.[key]) }));
 }
 
 export default function AuditLogs() {
@@ -169,7 +197,7 @@ export default function AuditLogs() {
       <div>
         <span className="eyebrow"><FileClock size={14} /> Traçabilité</span>
         <h1>Journal d’audit</h1>
-        <p>Historique sécurisé des opérations sensibles, avec les données avant/après et la provenance de chaque action.</p>
+        <p>Qui a fait quoi, et quand ? Consultez les changements importants de la plateforme.</p>
       </div>
       <button className="sync-button" type="button" onClick={load} disabled={state.loading}>
         <RefreshCw size={17} className={state.loading ? 'spinning' : undefined} /> Actualiser
@@ -214,8 +242,8 @@ export default function AuditLogs() {
           <tbody>{groups.map((group) => <Fragment key={group.key}>
             {grouping === 'day' && <tr className="audit-table__group" key={`group-${group.key}`}><th colSpan="5">{group.label}</th></tr>}
             {group.rows.map((log) => <tr key={log.id}>
-              <td><strong>{actionLabel(log.action)}</strong><small>AUD-{String(log.id).padStart(6, '0')}</small></td>
-              <td><span className="audit-entity">{entityLabel(log.entity_type)}</span><small>{log.entity_id ? `ID — ${log.entity_id}` : 'ID —'}</small></td>
+              <td><strong>{actionLabel(log.action)}</strong></td>
+              <td><span className="audit-entity">{entityLabel(log.entity_type)}</span></td>
               <td><strong>{formatActor(log)}</strong><small>{log.email || 'Action système'}</small></td>
               <td><button className="audit-detail-button" type="button" onClick={() => setSelectedLog(log)}><Eye size={15} /> Voir le détail</button><small>{summary(log)}</small></td>
               <td className="audit-date">{formatDate(log.created_at)}</td>
@@ -230,15 +258,12 @@ export default function AuditLogs() {
       {selectedLog && <div className="audit-detail">
         <dl className="audit-detail__meta">
           <div><dt>Action</dt><dd>{actionLabel(selectedLog.action)}</dd></div>
-          <div><dt>Entité</dt><dd>{entityLabel(selectedLog.entity_type)}{selectedLog.entity_id ? ` · #${selectedLog.entity_id}` : ''}</dd></div>
+          <div><dt>Élément concerné</dt><dd>{entityLabel(selectedLog.entity_type)}</dd></div>
           <div><dt>Utilisateur</dt><dd>{formatActor(selectedLog)}</dd></div>
           <div><dt>Date</dt><dd>{formatDate(selectedLog.created_at)}</dd></div>
           <div><dt>Adresse IP</dt><dd>{selectedLog.ip_address || 'Non enregistrée'}</dd></div>
         </dl>
-        <div className="audit-detail__changes">
-          <section><h3>Avant</h3><pre>{jsonValue(selectedLog.old_values)}</pre></section>
-          <section><h3>Après</h3><pre>{jsonValue(selectedLog.new_values)}</pre></section>
-        </div>
+        <div className="audit-detail__changes"><h3>Changements enregistrés</h3>{changes(selectedLog).length ? <table><thead><tr><th>Champ</th><th>Avant</th><th>Après</th></tr></thead><tbody>{changes(selectedLog).map((change) => <tr key={change.key}><th>{friendlyField(change.key)}</th><td>{change.before}</td><td>{change.after}</td></tr>)}</tbody></table> : <p>Aucun changement de champ affichable pour cette opération.</p>}</div>
       </div>}
     </Modal>
   </section>;

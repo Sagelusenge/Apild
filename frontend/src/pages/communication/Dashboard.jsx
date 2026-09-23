@@ -4,6 +4,7 @@ import { statisticsApi } from '../../api/statistics.api';
 import StatCard from '../../components/dashboard/StatCard';
 import CommunicationInsights from '../../components/dashboard/CommunicationInsights';
 import { useUi } from '../../context/UiContext';
+import { emailFeaturesEnabled } from '../../config/features';
 
 const COPY = {
   fr: { eyebrow: 'Espace communication', title: 'Audience et publications', subtitle: 'Suivez les visites, les interactions et la croissance de la lettre d’information.', refresh: 'Actualiser' },
@@ -28,7 +29,7 @@ export default function Dashboard() {
   useEffect(() => { load(); }, [load]);
 
   return <div className="communication-dashboard">
-    <header className="dashboard-welcome"><div><span className="eyebrow">{copy.eyebrow}</span><h1>{copy.title}</h1><p>{copy.subtitle}</p></div><button className="sync-button" type="button" onClick={load} disabled={loading}><RefreshCw className={loading ? 'spinning' : ''} size={17} /> {copy.refresh}</button></header>
+    <header className="dashboard-welcome"><div><span className="eyebrow">{copy.eyebrow}</span><h1>{copy.title}</h1><p>{emailFeaturesEnabled ? copy.subtitle : language === 'fr' ? 'Suivez les visites, les interactions et les publications.' : language === 'sw' ? 'Fuatilia matembezi, mwingiliano na machapisho.' : 'Monitor visits, interactions and publications.'}</p></div><button className="sync-button" type="button" onClick={load} disabled={loading}><RefreshCw className={loading ? 'spinning' : ''} size={17} /> {copy.refresh}</button></header>
     <CommunicationInsights stats={stats} language={language} formatNumber={formatNumber} StatCard={StatCard} />
   </div>;
 }

@@ -134,6 +134,17 @@ async function uploadArticleImage(article, file) {
   return resourceApi.update('articles', article.id, { featured_image_url: media.public_url });
 }
 
+async function uploadArticleAttachments(article, files) {
+  if (!article?.id || !files?.length) return;
+  for (const file of files) {
+    const data = new FormData();
+    data.append('file', file);
+    data.append('article_id', String(article.id));
+    data.append('title', file.name);
+    await unwrap(api.post('/media/upload', data));
+  }
+}
+
 function ResourceForm({ form, mode, record, lookups, lookupsError, onCancel, onSave, canManageUserAccounts = false }) {
   const [values, setValues] = useState(() => initialValues(form, record));
   const [errors, setErrors] = useState({});
@@ -237,10 +248,10 @@ function ResourceForm({ form, mode, record, lookups, lookupsError, onCancel, onS
       </div>;
       if (isFile) return <div className={fieldClassName} key={field.name}>
         <span className="field-label">{field.label}{field.required && ' *'}</span>
-        <input id={id} className="file-picker-input" type="file" onChange={(event) => setValue(field, event.target.files?.[0] || null)} required={field.required || (mode === 'create' && field.requiredOnCreate)} accept={field.accept} />
+        <input id={id} className="file-picker-input" type="file" multiple={Boolean(field.multiple)} onChange={(event) => setValue(field, field.multiple ? Array.from(event.target.files || []) : event.target.files?.[0] || null)} required={field.required || (mode === 'create' && field.requiredOnCreate)} accept={field.accept} />
         <label className="file-picker" htmlFor={id}>
           <ImagePlus size={20} aria-hidden="true" />
-          <span><strong>{values[field.name]?.name || `Choisir ${field.accept?.startsWith('image/') ? 'une image' : 'un fichier'} depuis cet appareil`}</strong><small>{values[field.name]?.name ? 'Fichier prêt à être téléversé.' : field.accept?.startsWith('image/') ? 'PNG, JPEG, WebP ou GIF' : 'Choisissez un fichier compatible.'}</small></span>
+          <span><strong>{Array.isArray(values[field.name]) ? values[field.name].length ? `${values[field.name].length} fichier(s) sélectionné(s)` : 'Choisir des fichiers depuis cet appareil' : values[field.name]?.name || `Choisir ${field.accept?.startsWith('image/') ? 'une image' : 'un fichier'} depuis cet appareil`}</strong><small>{values[field.name]?.name || values[field.name]?.length ? 'Fichier(s) prêt(s) à être téléversé(s).' : field.accept?.startsWith('image/') ? 'PNG, JPEG, WebP ou GIF' : 'Choisissez un fichier compatible.'}</small></span>
         </label>
         {field.help && <small>{field.help}</small>}
         {fieldError && <small className="field-error">{fieldError}</small>}
@@ -372,9 +383,12 @@ export default function ResourcePage({ title, description, resource, canCreate =
       saved = await resourceApi.update(resource, editor.record.id, payload);
     }
 
+    if (editor.mode === 'create' && resource === 'articles') setEditor({ mode: 'edit', record: saved, loading: false });
+
     if (resource === 'articles' && values.featured_image_file) {
       saved = await uploadArticleImage(saved, values.featured_image_file);
     }
+    if (resource === 'articles' && values.attachment_files?.length) await uploadArticleAttachments(saved, values.attachment_files);
 
     if (resource === 'roles' && Array.isArray(values.permission_ids)) {
       const roleId = saved?.id || editor.record?.id;

@@ -10,6 +10,7 @@ export const authApi = {
     return unwrap(api.post('/auth/profile/avatar', payload));
   },
   forgotPassword: (email) => unwrap(api.post('/auth/forgot-password', { email })),
+  verifyResetCode: (email, code) => unwrap(api.post('/auth/verify-reset-code', { email, code })),
   resetPassword: (payload, password) => unwrap(api.post('/auth/reset-password', typeof payload === 'string' ? { token: payload, password } : payload)),
   changePassword: ({ newPassword, currentPassword }) => unwrap(api.post('/auth/change-password', {
     new_password: newPassword,

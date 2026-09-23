@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, CalendarDays, Heart, LoaderCircle, MessageCircle, Share2, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, FileText, Heart, LoaderCircle, MessageCircle, Share2, UserRound } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import Loader from '../../components/common/Loader';
 import { articlesApi } from '../../api/articles.api';
@@ -21,6 +21,7 @@ export default function ArticleDetails() {
   const [article, setArticle] = useState();
   const [feedback, setFeedback] = useState(emptyFeedback);
   const [comments, setComments] = useState();
+  const [attachments, setAttachments] = useState([]);
   const [commentForm, setCommentForm] = useState(() => ({ author_name: '', author_email: '', content: '' }));
   const [pendingAction, setPendingAction] = useState('');
   const commentContentRef = useRef(null);
@@ -40,6 +41,7 @@ export default function ArticleDetails() {
     setFeedback(emptyFeedback);
     articlesApi.publicOne(id).then((value) => { if (active) setArticle(value); }).catch(() => { if (active) setArticle(null); });
     articlesApi.comments(id, { page: 1, limit: 50 }).then((response) => { if (active) setComments(response.data || []); }).catch(() => { if (active) setComments([]); });
+    articlesApi.attachments(id).then((items) => { if (active) setAttachments(items || []); }).catch(() => { if (active) setAttachments([]); });
     loadFeedback();
     return () => { active = false; };
   }, [id, loadFeedback]);
@@ -112,6 +114,7 @@ export default function ArticleDetails() {
   return <article className="article-detail-page">
     <header className="article-detail-hero" style={{ '--detail-image': `url("${articleImage}")` }}><div className="container"><Link className="back-link" to="/actualites"><ArrowLeft size={17}/> {text.details.allNews}</Link><span className="eyebrow">{text.details.publication}</span><h1>{localizedArticle.title}</h1><p className="article-lead">{localizedArticle.excerpt}</p></div></header>
     <div className="article-detail container"><Reveal className="article-content">{plainText(localizedArticle.content).split(/\n+/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</Reveal>
+      {attachments.length > 0 && <section className="article-attachments card" aria-label="Documents joints"><h2>Documents joints</h2><ul>{attachments.map((file) => <li key={file.id}><FileText size={19} /><a href={resolveFeaturedImage(file.public_url, '#')} target="_blank" rel="noopener noreferrer">{file.original_name}</a><small>{Math.max(1, Math.round(Number(file.file_size || 0) / 1024))} Ko</small></li>)}</ul></section>}
       <section className="article-feedback card" aria-label={copy.react}>
         <div className="article-feedback__heading"><span>{copy.react}</span><div><small>{feedback.likes_count} {copy.likes}</small><small>{feedback.comments_count} {copy.comments}</small><small>{feedback.shares_count} {copy.shares}</small></div></div>
         <div className="article-feedback__actions"><button type="button" className={`article-feedback__button${feedback.liked ? ' is-active' : ''}`} onClick={toggleLike} disabled={Boolean(pendingAction)} aria-pressed={feedback.liked}><Heart size={18} fill={feedback.liked ? 'currentColor' : 'none'} />{feedback.liked ? copy.liked : copy.like}</button><button type="button" className="article-feedback__button" onClick={scrollToComments}><MessageCircle size={18}/>{copy.comment}</button><button type="button" className="article-feedback__button" onClick={shareArticle} disabled={Boolean(pendingAction)}>{pendingAction === 'share' ? <LoaderCircle className="spinning" size={18}/> : <Share2 size={18}/>} {copy.share}</button></div>

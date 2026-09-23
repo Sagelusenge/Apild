@@ -4,9 +4,18 @@ const config = require('../../config/entities').articles;
 const asyncHandler = require('../../utils/asyncHandler');
 const { success, created } = require('../../utils/response');
 const engagement = require('./article.engagement.service');
+const db = require('../../config/database');
 
 const controller=createController(service,config);
 controller.categories=createController(service.categories,{entityName:'Categorie'});
+controller.attachments = asyncHandler(async (request, response) => {
+ const rows = await db.query(`SELECT m.id,m.original_name,m.public_url,m.mime_type,m.file_size
+   FROM media m JOIN articles a ON a.id=m.article_id
+   WHERE a.id=? AND a.status='published' AND a.deleted_at IS NULL
+     AND m.deleted_at IS NULL AND m.media_type='document'
+   ORDER BY m.created_at ASC`, [request.params.id]);
+ return success(response, rows, 'Pièces jointes chargées');
+});
 controller.unpublish = asyncHandler(async (request, response) => {
  const { article, previous } = await service.unpublish(request.params.id, request.user);
  request.auditMutation = {

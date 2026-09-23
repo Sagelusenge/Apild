@@ -19,6 +19,7 @@ router.patch('/categories/:id',authenticate,requirePermission('articles.manage')
 router.delete('/categories/:id',authenticate,requirePermission('articles.manage'),controller.categories.remove);
 router.get('/:id/engagement', controller.engagement);
 router.get('/:id/comments', controller.comments);
+router.get('/:id/attachments', controller.attachments);
 router.post('/:id/comments', publicInteractionLimiter, validate(engagementSchemas.comment), controller.createComment);
 router.post('/:id/like', publicInteractionLimiter, validate(engagementSchemas.reaction), controller.toggleLike);
 router.post('/:id/share', publicInteractionLimiter, validate(engagementSchemas.share), controller.share);

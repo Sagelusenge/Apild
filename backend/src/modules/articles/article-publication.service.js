@@ -1,4 +1,5 @@
 const repository = require('./article.repository');
+const env = require('../../config/env');
 const emailService = require('../../services/email.service');
 const logger = require('../../utils/logger');
 const { toSqlDateTime } = require('../../utils/date');
@@ -12,11 +13,13 @@ function nextRetryAt() {
 }
 
 async function queue(article) {
+  if (env.EMAIL_FEATURES_ENABLED === false) return;
   await repository.ensurePublicationNotification(article.id);
   await repository.preparePublicationRecipients(article.id);
 }
 
 async function dispatch(article) {
+  if (env.EMAIL_FEATURES_ENABLED === false) return { sent: 0, skipped: true };
   await queue(article);
   await repository.markInactivePublicationRecipients(article.id);
   await repository.startPublicationNotification(article.id);
@@ -49,6 +52,7 @@ async function dispatch(article) {
 }
 
 async function resumePending() {
+  if (env.EMAIL_FEATURES_ENABLED === false) return { queued: 0, completed: 0 };
   await repository.requeueStalePublicationRecipients();
   const articles = await repository.pendingPublicationArticles(MAX_DELIVERY_ATTEMPTS);
   const results = await Promise.allSettled(articles.map((article) => dispatch(article)));
@@ -61,6 +65,7 @@ async function resumePending() {
 }
 
 function schedule(article) {
+  if (env.EMAIL_FEATURES_ENABLED === false) return;
   setImmediate(() => {
     dispatch(article).catch((error) => {
       logger.error({ err: error, articleId: article.id }, 'Échec de la diffusion de publication');

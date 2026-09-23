@@ -4,7 +4,7 @@ const env = require('./env');
 let transporter;
 
 function getTransporter() {
-  if (!env.SMTP_HOST) return null;
+  if (env.EMAIL_FEATURES_ENABLED === false || !env.SMTP_HOST) return null;
   if (!transporter) {
     const passwordAuth = env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } : undefined;
     const oauth2Auth = env.SMTP_USER ? {
@@ -19,6 +19,9 @@ function getTransporter() {
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
       secure: env.SMTP_SECURE,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       auth: env.SMTP_AUTH_TYPE === 'oauth2' ? oauth2Auth : passwordAuth
     });
   }
