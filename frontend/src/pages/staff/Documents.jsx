@@ -1,1 +1,5 @@
-import ResourcePage from '../portal/ResourcePage'; export default function Documents(){return <ResourcePage title="Documents" description="Pieces partagees et livrables de vos projets." resource="documents" canDelete/>;}
+import ResourcePage from '../portal/ResourcePage';
+
+export default function Documents() {
+  return <ResourcePage title="Documents partagés" description="Importez, consultez et téléchargez les PDF et documents de travail APILD." resource="documents" canDelete />;
+}

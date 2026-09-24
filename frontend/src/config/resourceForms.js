@@ -274,11 +274,11 @@ export const resourceForms = {
     ]
   },
   documents: {
-    createLabel: 'Téléverser un document',
+    createLabel: 'Importer un PDF ou document',
     editLabel: 'Modifier le document',
     uploadEndpoint: 'documents/upload',
     fields: [
-      { name: 'file', label: 'Fichier', type: 'file', requiredOnCreate: true, accept: 'image/jpeg,image/png,image/webp,image/gif,application/pdf,.doc,.docx,.xls,.xlsx' },
+      { name: 'file', label: 'PDF ou document depuis votre appareil', type: 'file', requiredOnCreate: true, accept: 'application/pdf,.pdf,.doc,.docx,.xls,.xlsx,image/jpeg,image/png,image/webp,image/gif', help: 'Cliquez ici pour choisir un PDF ou un autre document sur votre ordinateur ou téléphone.' },
       { name: 'project_id', label: 'Projet associé', type: 'select', optionSource: 'projects', optionLabel: 'project' },
       { name: 'task_id', label: 'Tâche associée', type: 'select', optionSource: 'tasks', optionLabel: 'task' },
       { name: 'title', label: 'Titre' },

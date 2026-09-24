@@ -14,12 +14,13 @@ import useAuth from '../../hooks/useAuth';
 import './ResourcePage.css';
 
 const preferred = ['reference', 'name', 'title', 'subject', 'email', 'role_name', 'status', 'priority', 'created_at', 'updated_at'];
-const labels = { reference: 'Référence', name: 'Nom', title: 'Intitulé', subject: 'Objet', email: 'E-mail', role_name: 'Rôle', user_name: 'Acteur', department: 'Service', position_title: 'Fonction', contract_end_date: 'Fin du contrat', contract_type: 'Type de contrat', starts_on: 'Début', ends_on: 'Fin prévue', report_type: 'Type', period_start: 'Du', period_end: 'Au', leave_type: 'Type de congé', start_date: 'Début', end_date: 'Fin', status: 'Statut', priority: 'Priorité', created_at: 'Création', updated_at: 'Modification' };
+const labels = { reference: 'Référence', name: 'Nom', title: 'Intitulé', subject: 'Objet', email: 'E-mail', role_name: 'Rôle', user_name: 'Acteur', original_name: 'Fichier', document_type: 'Type', file_size: 'Taille', department: 'Service', position_title: 'Fonction', contract_end_date: 'Fin du contrat', contract_type: 'Type de contrat', starts_on: 'Début', ends_on: 'Fin prévue', report_type: 'Type', period_start: 'Du', period_end: 'Au', leave_type: 'Type de congé', start_date: 'Début', end_date: 'Fin', status: 'Statut', priority: 'Priorité', created_at: 'Création', updated_at: 'Modification' };
 const columnsByResource = {
   'hr/employees': ['reference', 'user_name', 'department', 'position_title', 'contract_end_date'],
   'hr/leaves': ['reference', 'user_name', 'leave_type', 'start_date', 'end_date', 'status'],
   'hr/contracts': ['reference', 'user_name', 'position_title', 'starts_on', 'ends_on', 'status'],
-  reports: ['reference', 'title', 'report_type', 'period_start', 'period_end', 'status']
+  reports: ['reference', 'title', 'report_type', 'period_start', 'period_end', 'status'],
+  documents: ['title', 'original_name', 'document_type', 'version_number', 'created_at']
 };
 const actionPermissions = {
   users: { create: 'users.create', update: 'users.update', delete: 'users.delete' },
@@ -474,20 +475,23 @@ export default function ResourcePage({ title, description, resource, canCreate =
     }
   };
 
-  const downloadPdf = async (row) => {
+  const downloadFile = async (row) => {
     setDownloadingPdf(row.id);
     try {
-      const response = await api.get(`/${resource}/${row.id}/pdf`, { responseType: 'blob' });
-      const objectUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const endpoint = resource === 'documents' ? `/documents/${row.id}/download` : `/${resource}/${row.id}/pdf`;
+      const response = await api.get(endpoint, { responseType: 'blob' });
+      const objectUrl = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] || 'application/octet-stream' }));
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = `${String(row.reference || 'apild').replace(/[^a-zA-Z0-9_-]/g, '')}.pdf`;
+      link.download = resource === 'documents'
+        ? row.original_name || `document-${row.id}`
+        : `${String(row.reference || 'apild').replace(/[^a-zA-Z0-9_-]/g, '')}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
     } catch (error) {
-      notify(getApiMessage(error, 'Téléchargement du PDF impossible.'), 'error');
+      notify(getApiMessage(error, 'Téléchargement du fichier impossible.'), 'error');
     } finally {
       setDownloadingPdf(null);
     }
@@ -495,8 +499,8 @@ export default function ResourcePage({ title, description, resource, canCreate =
 
   const accountAction = accountActionTarget?.action;
   const accountActionLabel = accountAction === 'block' ? 'Bloquer' : 'Débloquer';
-  const canDownloadPdf = resource === 'reports' || resource === 'hr/contracts';
-  const showActions = allowEdit || allowDelete || allowAccountStatusAction || canDownloadPdf;
+  const canDownloadFile = resource === 'reports' || resource === 'hr/contracts' || resource === 'documents';
+  const showActions = allowEdit || allowDelete || allowAccountStatusAction || canDownloadFile;
 
   return <div className={`resource-page${printable ? ' report-print-area' : ''}`}>
     <div className="resource-title"><div><span className="eyebrow">Gestion APILD</span><h1>{title}</h1><p>{description}</p></div><div className="resource-title-actions">{secondaryAction && <Link className="button button--ghost" to={secondaryAction.to}><Plus size={17} /> {secondaryAction.label}</Link>}{printable && <button className="button button--ghost print-report-button" type="button" onClick={() => window.print()}><Printer size={17} /> Imprimer</button>}{allowCreate && <button className="button button--primary" type="button" onClick={openCreate}><Plus /> {form?.createLabel || 'Ajouter'}</button>}</div></div>
@@ -511,7 +515,7 @@ export default function ResourcePage({ title, description, resource, canCreate =
           const canUnpublishRow = resource === 'articles' && allowEdit && row.status === 'published';
           return <tr key={row.id}>{columns.map((key) => <td key={key}>{display(row[key])}</td>)}{showActions && <td><div className="table-actions">
             {allowEdit && <button className="icon-button resource-table-action resource-table-action--edit" type="button" onClick={() => openEdit(row)} aria-label="Modifier" title="Modifier"><Pencil size={17} /></button>}
-            {canDownloadPdf && <button className="icon-button resource-table-action" type="button" onClick={() => downloadPdf(row)} disabled={downloadingPdf === row.id} aria-label="Télécharger le PDF" title="Télécharger le PDF"><FileDown size={17} /></button>}
+            {canDownloadFile && <button className="icon-button resource-table-action" type="button" onClick={() => downloadFile(row)} disabled={downloadingPdf === row.id} aria-label="Télécharger le fichier" title="Télécharger le fichier"><FileDown size={17} /></button>}
             {canUnpublishRow && <button className="icon-button resource-table-action resource-table-action--unpublish" type="button" onClick={() => setUnpublishTarget(row)} aria-label="Retirer du site public" title="Retirer du site public"><EyeOff size={17} /></button>}
             {canBlockRow && <button className="icon-button resource-table-action resource-status-action resource-status-action--block" type="button" onClick={() => setAccountActionTarget({ action: 'block', user: row })} aria-label="Bloquer l’utilisateur" title="Bloquer"><Ban size={17} /></button>}
             {canUnblockRow && <button className="icon-button resource-table-action resource-status-action resource-status-action--unblock" type="button" onClick={() => setAccountActionTarget({ action: 'unblock', user: row })} aria-label="Débloquer l’utilisateur" title="Débloquer"><Unlock size={17} /></button>}
