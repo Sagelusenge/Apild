@@ -24,12 +24,14 @@ const searchTargets = [
   ['/communication/interventions', 'les interventions'],
   ['/communication/calendrier', 'mon calendrier'],
   ['/communication/medias', 'les médias'],
+  ['/communication/documents', 'les fichiers partagés'],
   ['/communication/newsletters', 'les newsletters'],
   ['/communication/abonnes', 'les abonnés'],
   ['/rh/personnel', 'les dossiers du personnel'],
   ['/rh/conges', 'les congés'],
   ['/rh/contrats', 'les contrats'],
-  ['/rh/calendrier', 'mon calendrier']
+  ['/rh/calendrier', 'mon calendrier'],
+  ['/rh/documents', 'les fichiers partagés']
 ];
 
 const searchTargetFor = (pathname) => searchTargets.find(([path]) => pathname === path)?.[1] || '';
@@ -68,7 +70,7 @@ export default function PortalLayout({ items }) {
     }
   };
 
-  return <div className="portal-shell">
+  return <div className="portal-shell notranslate" translate="no">
     <aside className={open ? 'portal-sidebar is-open' : 'portal-sidebar'}>
       <div className="sidebar-brand"><Link to="/" aria-label={text.a11y.home} onClick={() => setOpen(false)}><Brand inverse /></Link><button className="icon-button sidebar-close" type="button" onClick={() => setOpen(false)} aria-label={text.portal.closeMenu}><X /></button></div>
       <nav>{items.map(({ to, label: itemLabel, icon: Icon = LayoutDashboard }) => <NavLink key={to} to={to} end={to.split('/').length === 2} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}><Icon size={19} />{itemLabel}</NavLink>)}</nav>

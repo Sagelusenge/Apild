@@ -285,7 +285,12 @@ export const resourceForms = {
       { name: 'description', label: 'Description', type: 'textarea' },
       { name: 'document_type', label: 'Type de document', type: 'select', defaultValue: 'other', options: options(['report', 'contract', 'photo', 'other']) },
       { name: 'version_number', label: 'Version', type: 'number', min: 1, step: '1', defaultValue: 1 },
-      { name: 'is_public', label: 'Autoriser la diffusion externe', type: 'checkbox' }
+      { name: 'share_scope', label: 'Partager avec', type: 'select', defaultValue: 'private', options: [
+        { value: 'private', label: 'Moi uniquement' },
+        { value: 'team', label: 'Toute l’équipe APILD' },
+        { value: 'selected', label: 'Des personnes précises' }
+      ], help: 'Les personnes concernées retrouveront ce fichier dans leur propre espace.' },
+      { name: 'recipient_ids', label: 'Choisir les destinataires', type: 'checkbox-grid', optionSource: 'users', optionLabel: 'user', visibleWhen: { field: 'share_scope', value: 'selected' }, requiredWhen: { field: 'share_scope', value: 'selected' }, layout: 'full' }
     ]
   }
 };

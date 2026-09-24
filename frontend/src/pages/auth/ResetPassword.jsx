@@ -49,7 +49,7 @@ export default function ResetPassword() {
     } finally { setSaving(false); }
   };
 
-  return <main className="auth-simple"><form className="auth-form card" onSubmit={submit} noValidate>
+  return <main className="auth-simple notranslate" translate="no"><form className="auth-form card" onSubmit={submit} noValidate>
     <Brand />
     <h1>{stage === 'code' ? 'Confirmer le code' : stage === 'done' ? 'Mot de passe modifié' : 'Nouveau mot de passe'}</h1>
     {error && <div className="form-error" role="alert">{error}</div>}

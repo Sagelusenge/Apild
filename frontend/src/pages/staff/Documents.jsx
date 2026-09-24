@@ -1,5 +1,5 @@
 import ResourcePage from '../portal/ResourcePage';
 
 export default function Documents() {
-  return <ResourcePage title="Documents partagés" description="Importez, consultez et téléchargez les PDF et documents de travail APILD." resource="documents" canDelete />;
+  return <ResourcePage title="Fichiers partagés" description="Importez, partagez et téléchargez les PDF, documents Word, feuilles de calcul et images de travail APILD." resource="documents" canDelete />;
 }

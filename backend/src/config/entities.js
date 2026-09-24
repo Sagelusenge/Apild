@@ -52,7 +52,7 @@ const entities = {
   },
   documents: {
     table: 'documents', entityName: 'document', actorField: 'uploaded_by', softDelete: true,
-    fields: ['project_id', 'task_id', 'uploaded_by', 'title', 'description', 'document_type', 'original_name', 'stored_name', 'file_path', 'mime_type', 'file_size', 'version_number', 'is_public'],
+    fields: ['project_id', 'task_id', 'uploaded_by', 'title', 'description', 'document_type', 'original_name', 'stored_name', 'file_path', 'mime_type', 'file_size', 'version_number', 'is_public', 'share_scope', 'recipient_ids'],
     required: ['title', 'original_name', 'stored_name', 'file_path', 'mime_type'], search: ['title', 'description', 'original_name'], filters: ['project_id', 'task_id', 'document_type', 'is_public'],
     readPermission: 'documents.read', createPermission: 'documents.manage', updatePermission: 'documents.manage', deletePermission: 'documents.manage'
   },
