@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUi } from '../../context/UiContext';
 
@@ -10,9 +10,14 @@ function syncGoogleLanguage(language, force = false) {
   const target = language === 'fr' ? '' : language;
   if (force || combo.value !== target) {
     combo.value = target;
-    combo.dispatchEvent(new Event('change'));
+    combo.dispatchEvent(new Event('change', { bubbles: true }));
   }
   return true;
+}
+
+function persistGoogleLanguage(language) {
+  const value = language === 'fr' ? '/fr/fr' : `/fr/${language}`;
+  document.cookie = `googtrans=${value};path=/;SameSite=Lax`;
 }
 
 export default function GoogleTranslateBridge() {
@@ -29,6 +34,7 @@ export default function GoogleTranslateBridge() {
         autoDisplay: false,
         multilanguagePage: true
       }, 'google_translate_element');
+      window.requestAnimationFrame(() => syncGoogleLanguage(language, true));
     };
 
     window.apildGoogleTranslateInit = initialize;
@@ -45,16 +51,22 @@ export default function GoogleTranslateBridge() {
     return () => {
       if (window.apildGoogleTranslateInit === initialize) delete window.apildGoogleTranslateInit;
     };
-  }, []);
+  }, [language]);
+
+  useLayoutEffect(() => {
+    persistGoogleLanguage(language);
+    syncGoogleLanguage(language, true);
+  }, [language, pathname]);
 
   useEffect(() => {
+    if (syncGoogleLanguage(language, true)) return undefined;
     let attempts = 0;
     const timer = window.setInterval(() => {
       attempts += 1;
-      if (syncGoogleLanguage(language) || attempts >= 20) window.clearInterval(timer);
-    }, 250);
+      if (syncGoogleLanguage(language, true) || attempts >= 60) window.clearInterval(timer);
+    }, 50);
     return () => window.clearInterval(timer);
-  }, [language]);
+  }, [language, pathname]);
 
   useEffect(() => {
     if (language === 'fr') return undefined;
@@ -73,8 +85,8 @@ export default function GoogleTranslateBridge() {
         translating.current = true;
         syncGoogleLanguage(language, true);
         window.clearTimeout(release);
-        release = window.setTimeout(() => { translating.current = false; }, 1400);
-      }, 450);
+        release = window.setTimeout(() => { translating.current = false; }, 900);
+      }, 100);
     });
     observer.observe(root, { childList: true, subtree: true });
     return () => {
