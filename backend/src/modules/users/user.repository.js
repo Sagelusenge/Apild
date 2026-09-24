@@ -1,5 +1,6 @@
 const db = require('../../config/database');
 const { createRepository } = require('../../utils/crudFactory');
+const { ACTIVE_ROLES } = require('../../config/activeRoles');
 
 const config = {
   table: 'users', entityName: 'utilisateur', softDelete: true,
@@ -18,8 +19,8 @@ repository.findByEmail = async (email) => {
 repository.getRoles = async (userId) => db.query(
   `SELECT r.id, r.code, r.name
      FROM roles r JOIN user_roles ur ON ur.role_id = r.id
-    WHERE ur.user_id = ? ORDER BY r.name`,
-  [userId]
+    WHERE ur.user_id = ? AND r.code IN (${ACTIVE_ROLES.map(() => '?').join(',')}) ORDER BY r.name`,
+  [userId, ...ACTIVE_ROLES]
 );
 
 repository.setRoles = async (userId, roleIds, assignedBy) => db.transaction(async (connection) => {

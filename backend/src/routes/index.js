@@ -22,5 +22,6 @@ router.use('/statistics', require('../modules/statistics/statistics.routes'));
 router.use('/contact', require('../modules/contact/contact.routes'));
 router.use('/settings', require('../modules/settings/settings.routes'));
 router.use('/audit-logs', require('./audit.routes'));
+router.use('/hr', require('../modules/hr/hr.routes'));
 
 module.exports = router;

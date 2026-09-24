@@ -36,7 +36,7 @@ function uniqueIds(values = []) {
 
 function isStaffEventScope(user) {
   const roles = user?.roles || [];
-  return roles.includes('staff') && !roles.includes('admin');
+  return !roles.includes('admin');
 }
 
 async function assertActiveStaff(ids) {
@@ -54,7 +54,7 @@ async function notifyNewParticipants(event, newParticipants) {
       notification_type: 'meeting_invitation',
       title: 'Invitation à une réunion',
       message: `Vous êtes invité(e) à « ${event.title} » le ${String(event.starts_at).slice(0, 16)}.`,
-      link_url: '/staff/calendrier'
+      link_url: '/portail'
     });
     await emailQueueService.queueMeetingInvitation(event, participant);
   }));

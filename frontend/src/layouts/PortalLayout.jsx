@@ -12,20 +12,24 @@ import './PortalSidebar.css';
 
 const searchTargets = [
   ['/admin/projets', 'les projets'],
+  ['/admin/interventions', 'les interventions'],
   ['/admin/taches', 'les tâches'],
   ['/admin/calendrier', 'le calendrier'],
-  ['/admin/equipe', 'les acteurs'],
+  ['/admin/rapports', 'les rapports'],
   ['/admin/documents', 'les documents'],
   ['/admin/utilisateurs', 'les acteurs'],
   ['/admin/roles', 'les rôles'],
   ['/admin/audit', 'le journal d’audit'],
   ['/communication/articles', 'les articles'],
+  ['/communication/interventions', 'les interventions'],
+  ['/communication/calendrier', 'mon calendrier'],
   ['/communication/medias', 'les médias'],
   ['/communication/newsletters', 'les newsletters'],
   ['/communication/abonnes', 'les abonnés'],
-  ['/staff/taches', 'mes tâches'],
-  ['/staff/calendrier', 'mon calendrier'],
-  ['/staff/documents', 'les documents']
+  ['/rh/personnel', 'les dossiers du personnel'],
+  ['/rh/conges', 'les congés'],
+  ['/rh/contrats', 'les contrats'],
+  ['/rh/calendrier', 'mon calendrier']
 ];
 
 const searchTargetFor = (pathname) => searchTargets.find(([path]) => pathname === path)?.[1] || '';

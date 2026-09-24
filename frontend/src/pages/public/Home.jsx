@@ -55,7 +55,7 @@ export default function Home() {
 
     <section className="section"><div className="container">
       <Reveal className="section-heading"><div><span className="eyebrow">{text.home.projectsEyebrow}</span><h2>{text.home.projectsTitle}</h2></div><Link to="/projets">{text.home.projectsLink} <ArrowRight size={17} /></Link></Reveal>
-      {projects.length ? <div className="cards-3">{projects.map((project, index) => <ProjectCard key={project.id} project={project} image={PROJECT_IMAGES[index % PROJECT_IMAGES.length]} delay={Math.min(index, 3) * 65} />)}</div> : <Reveal className="public-placeholder card"><Sprout/><h3>{text.home.projectsEmpty}</h3><p>{text.home.projectsEmptyText}</p></Reveal>}
+      {projects.length ? <div className="cards-3">{projects.map((project, index) => <ProjectCard key={project.id} project={project} image={PROJECT_IMAGES[index % PROJECT_IMAGES.length]} delay={Math.min(index, 3) * 65} showReference={false} />)}</div> : <Reveal className="public-placeholder card"><Sprout/><h3>{text.home.projectsEmpty}</h3><p>{text.home.projectsEmptyText}</p></Reveal>}
     </div></section>
 
     <section className="section news-section"><div className="container">

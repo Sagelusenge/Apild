@@ -4,6 +4,8 @@ const repository = require('./user.repository');
 const AppError = require('../../utils/AppError');
 const emailQueueService = require('../../services/operationalEmailQueue.service');
 const logger = require('../../utils/logger');
+const db = require('../../config/database');
+const { ACTIVE_ROLES } = require('../../config/activeRoles');
 
 async function get(id) {
   const user = await repository.findById(id);
@@ -29,15 +31,28 @@ function assertNotSelf(id, actor) {
   }
 }
 
+async function assertAllowedRoles(roleIds) {
+  if (!Array.isArray(roleIds) || !roleIds.length) {
+    throw new AppError('Attribuez un role actif a cet acteur.', 422, 'ROLE_REQUIRED');
+  }
+  const uniqueIds = [...new Set(roleIds.map(Number))];
+  const rows = await db.query(
+    `SELECT id FROM roles WHERE id IN (${uniqueIds.map(() => '?').join(',')})
+      AND code IN (${ACTIVE_ROLES.map(() => '?').join(',')}) AND is_active = TRUE`,
+    [...uniqueIds, ...ACTIVE_ROLES]
+  );
+  if (rows.length !== uniqueIds.length) throw new AppError('Seuls les roles admin, communication et RH peuvent etre attribues.', 422, 'INVALID_ROLE');
+}
+
 async function create(payload, actor) {
   assertAdminRole(actor);
   if (await repository.findByEmail(payload.email)) throw new AppError('Cette adresse email est deja utilisee', 409, 'EMAIL_EXISTS');
   const { password, role_ids = [], ...data } = payload;
-  if (role_ids.length) assertAdminRole(actor);
+  await assertAllowedRoles(role_ids);
   data.password_hash = await bcrypt.hash(password, env.BCRYPT_ROUNDS);
   data.must_change_password = true;
   const user = await repository.create(data);
-  if (role_ids.length) await repository.setRoles(user.id, role_ids, actor.id);
+  await repository.setRoles(user.id, role_ids, actor.id);
   const createdUser = await get(user.id);
   // Delivery is deliberately best-effort: a temporary SMTP outage must never
   // make the administrator recreate the account.  The queue preserves a
@@ -55,7 +70,10 @@ async function create(payload, actor) {
 async function update(id, payload, actor) {
   await get(id);
   const { password, role_ids, status, ...data } = payload;
-  if (role_ids !== undefined) assertAdminRole(actor);
+  if (role_ids !== undefined) {
+    assertAdminRole(actor);
+    await assertAllowedRoles(role_ids);
+  }
   if (password) assertAdminRole(actor);
   if (status !== undefined) {
     assertAdminRole(actor);

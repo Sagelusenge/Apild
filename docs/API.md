@@ -9,7 +9,7 @@ Toutes les reponses JSON suivent la forme `{ success, message, data, meta? }`. L
 | Methode | Route | Description |
 | --- | --- | --- |
 | POST | `/auth/login` | Connexion |
-| POST | `/auth/register` | Inscription, si activee dans `.env` |
+| POST | `/auth/register` | Désactivée : seul l’admin crée les comptes |
 | POST | `/auth/refresh` | Renouvellement des jetons |
 | POST | `/auth/logout` | Revocation du refresh token |
 | GET | `/auth/me` | Profil, roles et permissions |
@@ -36,7 +36,7 @@ Chaque ressource ci-dessous expose `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `P
 | Ressource | Route |
 | --- | --- |
 | Utilisateurs | `/users` |
-| Roles | `/roles` |
+| Roles | `/roles` (lecture et modification des trois rôles actifs uniquement ; création et suppression désactivées) |
 | Projets | `/projects` |
 | Taches | `/tasks` |
 | Evenements | `/events` |
@@ -53,7 +53,7 @@ Chaque ressource ci-dessous expose `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `P
 
 Les suppressions sont logiques pour les donnees metier sensibles et physiques pour les ressources de configuration appropriees.
 
-Les references de projets, taches, interventions, articles et rapports, ainsi que le code des roles, sont generes exclusivement par l’API. L’avancement d’un projet est calcule en direct a partir de ses dates de debut et de fin ; une valeur fournie par le navigateur est ignoree.
+Les references de projets, taches, interventions, articles, contrats et rapports sont generees exclusivement par l’API. Les codes des rôles actifs sont fixes : `admin`, `communication`, `rh`. L’avancement d’un projet est calcule en direct a partir de ses dates de debut et de fin ; une valeur fournie par le navigateur est ignoree.
 
 Une tâche est un élément de type *to-do* : `project_id` est facultatif. Une réunion doit contenir une date et une heure futures, une fin postérieure au début, et peut inclure un `reminder_minutes` compris entre `0` et `43200`.
 
@@ -61,7 +61,7 @@ Une tâche est un élément de type *to-do* : `project_id` est facultatif. Une r
 
 - Projets : `/:id/summary`, `/:id/members`, `/:id/domains`
 - Taches : `/:id/assignees`, `/:id/comments`
-- Evenements : `/staff` (personnel actif, réservé à `events.manage`), `/:id/participants`, `PUT /:id/participants` avec `{ "user_ids": [1, 2] }`
+- Evenements : `/actors` (acteurs actifs ; alias historique `/staff`), `/:id/participants`, `PUT /:id/participants` avec `{ "user_ids": [1, 2] }`. Les rôles communication et RH peuvent lire leur calendrier et leurs réunions via `events.read`.
 - Articles : `/categories`, `PATCH /:id/unpublish` pour retirer une publication du site public sans la supprimer ; l’article passe à `archived`, reste modifiable et l’action est auditée.
 - Interactions d’actualité publiques : `GET /articles/:id/engagement?visitor_id=<uuid>`, `GET /articles/:id/comments`, `POST /articles/:id/comments`, `POST /articles/:id/like` avec `{ "visitor_id": "uuid" }`, et `POST /articles/:id/share`.
 - Interventions : `/domains`
@@ -69,7 +69,8 @@ Une tâche est un élément de type *to-do* : `project_id` est facultatif. Une r
 - Notifications : `/read-all`
 - Medias : `/upload`
 - Documents : `/upload`
-- Rapports : `/:id/pdf`
+- Rapports : `/:id/pdf` (état imprimable avec en-tête APILD et pagination)
+- RH : `/hr/contracts/:id/pdf` (fiche contractuelle de l’acteur)
 - Roles : `/permissions`, `/:id/permissions`
 - Parametres : `/test-email` pour verifier la configuration SMTP
 
@@ -121,6 +122,13 @@ npm audit
 ```
 
 Les tests d'integration MariaDB sont conditionnels et s'activent avec `RUN_DB_TESTS=true` et les variables `DB_*` pointant vers une base de test.
+
+## Interventions et ressources humaines
+
+- `POST /api/interventions` et `PATCH /api/interventions/:id` : droits `interventions.create` et `interventions.update`, attribués au manager et à la communication. Le droit de suppression `interventions.manage` reste réservé au manager. La photo est téléversée avec `POST /api/media/upload`, puis son `public_url` est enregistré dans `image_url` de l’intervention.
+- `GET /api/public/interventions` : ne renvoie que les interventions terminées, y compris leur photo lorsqu’elle existe. Les bénéficiaires de l’accueil sont calculés depuis ces mêmes interventions, et non depuis une saisie indépendante.
+- `GET /api/hr/overview`, `GET /api/hr/users`, `GET|POST /api/hr/{employees|leaves|contracts}` et `GET|PATCH|DELETE /api/hr/{employees|leaves|contracts}/:id` : réservés aux rôles `admin` et `rh` avec la permission `hr.manage`. Les suppressions sont logiques. `GET /api/hr/contracts/:id/pdf` produit une fiche imprimable pour le contrat demandé.
+- Les champs de salaire contractuel ne constituent pas un moteur de paie. Aucun net légal n’est calculé ou validé par ces routes.
 
 ## Configuration SMTP
 

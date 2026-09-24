@@ -17,7 +17,7 @@ const entities = {
     table: 'events', entityName: 'evenement', actorField: 'organizer_id', softDelete: true,
     fields: ['project_id', 'title', 'description', 'event_type', 'status', 'starts_at', 'ends_at', 'reminder_minutes', 'location', 'meeting_url', 'is_public', 'organizer_id'],
     required: ['title', 'starts_at', 'ends_at'], search: ['title', 'description', 'location'], filters: ['project_id', 'event_type', 'status', 'is_public'],
-    readPermission: 'projects.read', createPermission: 'events.manage', updatePermission: 'events.manage', deletePermission: 'events.manage'
+    readPermission: 'events.read', createPermission: 'events.manage', updatePermission: 'events.manage', deletePermission: 'events.manage'
   },
   partners: {
     table: 'partners', entityName: 'partenaire', softDelete: true,
@@ -27,9 +27,9 @@ const entities = {
   },
   interventions: {
     table: 'interventions', entityName: 'intervention', referencePrefix: 'INT', actorField: 'created_by', softDelete: true,
-    fields: ['reference', 'project_id', 'domain_id', 'title', 'description', 'intervention_date', 'province', 'territory', 'locality', 'beneficiaries_men', 'beneficiaries_women', 'beneficiaries_children', 'status'],
+    fields: ['reference', 'project_id', 'domain_id', 'title', 'description', 'image_url', 'intervention_date', 'province', 'territory', 'locality', 'beneficiaries_men', 'beneficiaries_women', 'beneficiaries_children', 'status'],
     required: ['domain_id', 'title', 'intervention_date'], search: ['reference', 'title', 'description', 'locality'], filters: ['project_id', 'domain_id', 'status', 'province'],
-    readPermission: 'projects.read', createPermission: 'interventions.manage', updatePermission: 'interventions.manage', deletePermission: 'interventions.manage'
+    readPermission: 'projects.read', createPermission: 'interventions.create', updatePermission: 'interventions.update', deletePermission: 'interventions.manage'
   },
   articles: {
     table: 'articles', entityName: 'article', referencePrefix: 'ART', actorField: 'author_id', softDelete: true,

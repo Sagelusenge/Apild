@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ban, EyeOff, ImagePlus, Pencil, Plus, Printer, RotateCcw, Search, Trash2, Unlock } from 'lucide-react';
+import { Ban, EyeOff, FileDown, ImagePlus, Pencil, Plus, Printer, RotateCcw, Search, Trash2, Unlock } from 'lucide-react';
 import { api, getApiMessage, unwrap } from '../../api/axios';
 import { articlesApi } from '../../api/articles.api';
 import { resourceApi } from '../../api/resource.api';
@@ -14,12 +14,21 @@ import useAuth from '../../hooks/useAuth';
 import './ResourcePage.css';
 
 const preferred = ['reference', 'name', 'title', 'subject', 'email', 'role_name', 'status', 'priority', 'created_at', 'updated_at'];
-const labels = { reference: 'Référence', name: 'Nom', title: 'Intitulé', subject: 'Objet', email: 'E-mail', role_name: 'Rôle', status: 'Statut', priority: 'Priorité', created_at: 'Création', updated_at: 'Modification' };
+const labels = { reference: 'Référence', name: 'Nom', title: 'Intitulé', subject: 'Objet', email: 'E-mail', role_name: 'Rôle', user_name: 'Acteur', department: 'Service', position_title: 'Fonction', contract_end_date: 'Fin du contrat', contract_type: 'Type de contrat', starts_on: 'Début', ends_on: 'Fin prévue', report_type: 'Type', period_start: 'Du', period_end: 'Au', leave_type: 'Type de congé', start_date: 'Début', end_date: 'Fin', status: 'Statut', priority: 'Priorité', created_at: 'Création', updated_at: 'Modification' };
+const columnsByResource = {
+  'hr/employees': ['reference', 'user_name', 'department', 'position_title', 'contract_end_date'],
+  'hr/leaves': ['reference', 'user_name', 'leave_type', 'start_date', 'end_date', 'status'],
+  'hr/contracts': ['reference', 'user_name', 'position_title', 'starts_on', 'ends_on', 'status'],
+  reports: ['reference', 'title', 'report_type', 'period_start', 'period_end', 'status']
+};
 const actionPermissions = {
   users: { create: 'users.create', update: 'users.update', delete: 'users.delete' },
   roles: { create: 'roles.manage', update: 'roles.manage', delete: 'roles.manage' },
   projects: { create: 'projects.create', update: 'projects.update', delete: 'projects.delete' },
-  interventions: { create: 'interventions.manage', update: 'interventions.manage', delete: 'interventions.manage' },
+  interventions: { create: 'interventions.create', update: 'interventions.update', delete: 'interventions.manage' },
+  'hr/employees': { create: 'hr.manage', update: 'hr.manage', delete: 'hr.manage' },
+  'hr/leaves': { create: 'hr.manage', update: 'hr.manage', delete: 'hr.manage' },
+  'hr/contracts': { create: 'hr.manage', update: 'hr.manage', delete: 'hr.manage' },
   tasks: { create: 'tasks.create', update: 'tasks.update', delete: 'tasks.delete' },
   events: { create: 'events.manage', update: 'events.manage', delete: 'events.manage' },
   reports: { create: 'reports.manage', update: 'reports.manage', delete: 'reports.manage' },
@@ -57,6 +66,7 @@ async function loadLookup(source) {
     const result = await resourceApi.list('interventions/domains', { page: 1, limit: 100, sortBy: 'name', sortOrder: 'asc' });
     return Array.isArray(result.data) ? result.data.filter((domain) => Boolean(Number(domain.is_active))) : [];
   }
+  if (source === 'hrUsers') return unwrap(api.get('/hr/users'));
 
   const resources = { roles: 'roles', users: 'users', projects: 'projects', tasks: 'tasks', articles: 'articles' };
   const resource = resources[source];
@@ -137,6 +147,17 @@ async function uploadArticleImage(article, file) {
   const media = await unwrap(api.post('/media/upload', data));
   if (!media?.public_url) throw new Error('La photo a été téléversée, mais son adresse est indisponible.');
   return resourceApi.update('articles', article.id, { featured_image_url: media.public_url });
+}
+
+async function uploadInterventionImage(intervention, file) {
+  if (!file || !intervention?.id) return intervention;
+  const data = new FormData();
+  data.append('file', file);
+  data.append('title', intervention.title || file.name);
+  data.append('alt_text', intervention.title || 'Intervention APILD');
+  const media = await unwrap(api.post('/media/upload', data));
+  if (!media?.public_url || !String(media.mime_type || '').startsWith('image/')) throw new Error('La photo téléversée est indisponible ou invalide.');
+  return resourceApi.update('interventions', intervention.id, { image_url: media.public_url });
 }
 
 async function uploadArticleAttachments(article, files) {
@@ -297,6 +318,7 @@ export default function ResourcePage({ title, description, resource, canCreate =
   const [changingAccountStatus, setChangingAccountStatus] = useState(false);
   const [unpublishTarget, setUnpublishTarget] = useState(null);
   const [unpublishing, setUnpublishing] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(null);
   const sources = useMemo(() => getSources(form), [form]);
   const actionsEnabled = Boolean(form);
   const hasOperationPermission = (operation) => {
@@ -355,10 +377,10 @@ export default function ResourcePage({ title, description, resource, canCreate =
 
   const columns = useMemo(() => {
     const row = state.rows[0] || {};
-    const selected = preferred.filter((key) => key in row).slice(0, 5);
+    const selected = (columnsByResource[resource] || preferred).filter((key) => key in row).slice(0, 6);
     if (!selected.length) selected.push(...Object.keys(row).filter((key) => !key.endsWith('_id') && key !== 'id').slice(0, 5));
     return selected;
-  }, [state.rows]);
+  }, [resource, state.rows]);
 
   const openCreate = () => setEditor({ mode: 'create', record: null, loading: false });
   const openEdit = async (row) => {
@@ -388,12 +410,13 @@ export default function ResourcePage({ title, description, resource, canCreate =
       saved = await resourceApi.update(resource, editor.record.id, payload);
     }
 
-    if (editor.mode === 'create' && resource === 'articles') setEditor({ mode: 'edit', record: saved, loading: false });
+    if (editor.mode === 'create' && ['articles', 'interventions'].includes(resource)) setEditor({ mode: 'edit', record: saved, loading: false });
 
     if (resource === 'articles' && values.featured_image_file) {
       saved = await uploadArticleImage(saved, values.featured_image_file);
     }
     if (resource === 'articles' && values.attachment_files?.length) await uploadArticleAttachments(saved, values.attachment_files);
+    if (resource === 'interventions' && values.intervention_image_file) saved = await uploadInterventionImage(saved, values.intervention_image_file);
 
     if (resource === 'roles' && Array.isArray(values.permission_ids)) {
       const roleId = saved?.id || editor.record?.id;
@@ -451,9 +474,29 @@ export default function ResourcePage({ title, description, resource, canCreate =
     }
   };
 
+  const downloadPdf = async (row) => {
+    setDownloadingPdf(row.id);
+    try {
+      const response = await api.get(`/${resource}/${row.id}/pdf`, { responseType: 'blob' });
+      const objectUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `${String(row.reference || 'apild').replace(/[^a-zA-Z0-9_-]/g, '')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
+    } catch (error) {
+      notify(getApiMessage(error, 'Téléchargement du PDF impossible.'), 'error');
+    } finally {
+      setDownloadingPdf(null);
+    }
+  };
+
   const accountAction = accountActionTarget?.action;
   const accountActionLabel = accountAction === 'block' ? 'Bloquer' : 'Débloquer';
-  const showActions = allowEdit || allowDelete || allowAccountStatusAction;
+  const canDownloadPdf = resource === 'reports' || resource === 'hr/contracts';
+  const showActions = allowEdit || allowDelete || allowAccountStatusAction || canDownloadPdf;
 
   return <div className={`resource-page${printable ? ' report-print-area' : ''}`}>
     <div className="resource-title"><div><span className="eyebrow">Gestion APILD</span><h1>{title}</h1><p>{description}</p></div><div className="resource-title-actions">{secondaryAction && <Link className="button button--ghost" to={secondaryAction.to}><Plus size={17} /> {secondaryAction.label}</Link>}{printable && <button className="button button--ghost print-report-button" type="button" onClick={() => window.print()}><Printer size={17} /> Imprimer</button>}{allowCreate && <button className="button button--primary" type="button" onClick={openCreate}><Plus /> {form?.createLabel || 'Ajouter'}</button>}</div></div>
@@ -468,6 +511,7 @@ export default function ResourcePage({ title, description, resource, canCreate =
           const canUnpublishRow = resource === 'articles' && allowEdit && row.status === 'published';
           return <tr key={row.id}>{columns.map((key) => <td key={key}>{display(row[key])}</td>)}{showActions && <td><div className="table-actions">
             {allowEdit && <button className="icon-button resource-table-action resource-table-action--edit" type="button" onClick={() => openEdit(row)} aria-label="Modifier" title="Modifier"><Pencil size={17} /></button>}
+            {canDownloadPdf && <button className="icon-button resource-table-action" type="button" onClick={() => downloadPdf(row)} disabled={downloadingPdf === row.id} aria-label="Télécharger le PDF" title="Télécharger le PDF"><FileDown size={17} /></button>}
             {canUnpublishRow && <button className="icon-button resource-table-action resource-table-action--unpublish" type="button" onClick={() => setUnpublishTarget(row)} aria-label="Retirer du site public" title="Retirer du site public"><EyeOff size={17} /></button>}
             {canBlockRow && <button className="icon-button resource-table-action resource-status-action resource-status-action--block" type="button" onClick={() => setAccountActionTarget({ action: 'block', user: row })} aria-label="Bloquer l’utilisateur" title="Bloquer"><Ban size={17} /></button>}
             {canUnblockRow && <button className="icon-button resource-table-action resource-status-action resource-status-action--unblock" type="button" onClick={() => setAccountActionTarget({ action: 'unblock', user: row })} aria-label="Débloquer l’utilisateur" title="Débloquer"><Unlock size={17} /></button>}

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const db = require('../config/database');
 const AppError = require('../utils/AppError');
+const { ACTIVE_ROLES } = require('../config/activeRoles');
 
 async function authenticate(request, _response, next) {
   try {
@@ -27,12 +28,13 @@ async function authenticate(request, _response, next) {
     const access = await db.query(
       `SELECT DISTINCT role_code, permission_code
          FROM v_user_permissions
-        WHERE user_id = ?`,
-      [user.id]
+        WHERE user_id = ? AND role_code IN (${ACTIVE_ROLES.map(() => '?').join(',')})`,
+      [user.id, ...ACTIVE_ROLES]
     );
     user.must_change_password = Boolean(user.must_change_password);
     user.roles = [...new Set(access.map((row) => row.role_code))];
     user.permissions = [...new Set(access.map((row) => row.permission_code))];
+    if (!user.roles.length) throw new AppError('Aucun role actif attribue. Contactez un administrateur.', 403, 'ROLE_REQUIRED');
     if (user.must_change_password && !request.allowPasswordChange && !request.optionalAuthentication) {
       throw new AppError('Vous devez definir un nouveau mot de passe avant de poursuivre', 403, 'MUST_CHANGE_PASSWORD');
     }

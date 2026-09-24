@@ -19,9 +19,20 @@ async function setPermissions(id, permissionIds) {
 }
 
 async function remove(id) {
-  const role = await base.get(id);
-  if (role.is_system) throw new AppError('Un role systeme ne peut pas etre supprime', 409, 'SYSTEM_ROLE');
-  return base.remove(id);
+  void id;
+  throw new AppError('Les trois roles APILD ne peuvent pas etre supprimes.', 409, 'FIXED_ROLES');
 }
 
-module.exports = { ...base, get, setPermissions, remove, listPermissions: repository.listPermissions };
+async function create() {
+  throw new AppError('Les roles APILD sont limites a admin, communication et RH.', 409, 'FIXED_ROLES');
+}
+
+async function update(id, payload, actor) {
+  await get(id);
+  const { name, description } = payload;
+  if (name === undefined && description === undefined) return get(id);
+  await base.update(id, { name, description }, actor);
+  return get(id);
+}
+
+module.exports = { ...base, get, create, update, setPermissions, remove, listPermissions: repository.listPermissions };

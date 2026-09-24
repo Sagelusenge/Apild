@@ -3,9 +3,10 @@ import ResourcePage from '../portal/ResourcePage';
 export default function Roles() {
   return <ResourcePage
     title="Rôles et permissions"
-    description="Créez les rôles utilisés lors de l’ajout des acteurs, puis attribuez leurs autorisations."
+    description="Trois rôles actifs : administration, communication et ressources humaines. Leurs autorisations restent configurables."
     resource="roles"
-    canDelete
+    canCreate={false}
+    canDelete={false}
     secondaryAction={{ to: '/admin/utilisateurs', label: 'Créer un acteur' }}
   />;
 }

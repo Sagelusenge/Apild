@@ -2,6 +2,7 @@ const { createRepository } = require('../../utils/crudFactory');
 const config = require('../../config/entities').events;
 const db = require('../../config/database');
 const { getPagination, getPaginationMeta } = require('../../utils/pagination');
+const { ACTIVE_ROLES } = require('../../config/activeRoles');
 
 const repository=createRepository(config);
 function identifier(value) {
@@ -63,9 +64,9 @@ repository.findActiveStaffByIds = async (ids) => {
       WHERE u.id IN (${placeholders})
         AND u.deleted_at IS NULL
         AND u.status = 'active'
-        AND r.code = 'staff'
+        AND r.is_active=TRUE AND r.code IN (${ACTIVE_ROLES.map(() => '?').join(',')})
       ORDER BY u.last_name, u.first_name`,
-    ids
+    [...ids, ...ACTIVE_ROLES]
   );
 };
 repository.activeStaff = () => db.query(
@@ -75,8 +76,9 @@ repository.activeStaff = () => db.query(
      JOIN roles r ON r.id = ur.role_id
     WHERE u.deleted_at IS NULL
       AND u.status = 'active'
-      AND r.code = 'staff'
-    ORDER BY u.last_name, u.first_name`
+      AND r.is_active=TRUE AND r.code IN (${ACTIVE_ROLES.map(() => '?').join(',')})
+    ORDER BY u.last_name, u.first_name`,
+  ACTIVE_ROLES
 );
 repository.replaceParticipants = async (eventId, userIds) => db.transaction(async (connection) => {
   const [existingRows] = await connection.execute(

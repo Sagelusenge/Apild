@@ -59,7 +59,7 @@ export default function Calendar() {
     if (projectResult.status === 'fulfilled') setProjects(projectResult.value?.data || []);
     if (staffResult.status === 'fulfilled') setStaff(staffResult.value || []);
     if (eventResult.status === 'rejected') notify('Le calendrier n’a pas pu être chargé.', 'error');
-    if (staffResult.status === 'rejected') notify('La liste du personnel n’a pas pu être chargée.', 'error');
+    if (staffResult.status === 'rejected') notify('La liste des acteurs n’a pas pu être chargée.', 'error');
     setLoading(false);
   }, [notify, month]);
 

@@ -68,16 +68,17 @@ La compilation de production est generee dans `frontend/dist`.
 
 ## Espaces proteges
 
-- `/admin` : espace unique de pilotage : projets, taches, calendrier, equipe, rapports, documents, utilisateurs, roles et journal d’audit ;
+- `/admin` : espace unique de pilotage : projets, tâches, calendrier, rapports, documents, acteurs, rôles et journal d’audit ;
 - `/manager/*` : ancienne URL redirigee vers `/admin` ;
-- `/communication` : tableau d’audience distinct, articles, medias, newsletters et abonnes ;
-- `/staff` : tableau de bord terrain, taches, calendrier et documents.
+- `/communication` : tableau d’audience distinct, interventions illustrées, calendrier, articles, médias et, en local avec SMTP, newsletters et abonnés ;
+- `/rh` : dossiers du personnel, contrats liés à un acteur, congés et calendrier ;
+- `/staff/*` : ancienne URL redirigée vers `/portail`, sans rôle `staff` actif.
 
 Les routes sont controlees par les roles renvoyes par `GET /api/auth/me`. Les autorisations metier restent egalement verifiees par le backend : masquer un bouton dans React ne remplace jamais un controle serveur.
 
 Chaque changement de page replace automatiquement la vue au debut de la page. Les cartes et les contenus publics ont des transitions discretes qui respectent le reglage systeme `prefers-reduced-motion`.
 
-Le calendrier permet de choisir une date future, un horaire, le motif et des membres du personnel. Le projet associe est facultatif. Chaque participant sélectionné reçoit une invitation avec son programme lorsque les envois planifiés sont activés. Les rapports sont temporairement retirés de la navigation, mais les données existantes ne sont pas supprimées.
+Le calendrier permet de choisir une date future, un horaire, le motif et des acteurs participants. Le projet associé est facultatif. Les invitations sont envoyées uniquement lorsque les e-mails et les tâches de fond sont activés. Les rapports et les fiches contractuelles disposent d’une action de téléchargement PDF.
 
 ## Désabonnement
 

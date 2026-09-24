@@ -1,4 +1,5 @@
 const db = require('../../config/database');
+const { ACTIVE_ROLES } = require('../../config/activeRoles');
 
 async function findUserByEmail(email) {
   const rows = await db.query(
@@ -23,27 +24,15 @@ async function findUserById(id) {
 }
 
 async function getAccess(userId) {
-  const rows = await db.query('SELECT role_code, permission_code FROM v_user_permissions WHERE user_id = ?', [userId]);
+  const rows = await db.query(
+    `SELECT role_code, permission_code FROM v_user_permissions
+      WHERE user_id = ? AND role_code IN (${ACTIVE_ROLES.map(() => '?').join(',')})`,
+    [userId, ...ACTIVE_ROLES]
+  );
   return {
     roles: [...new Set(rows.map((row) => row.role_code))],
     permissions: [...new Set(rows.map((row) => row.permission_code))]
   };
-}
-
-async function createStaffUser(payload) {
-  return db.transaction(async (connection) => {
-    const [result] = await connection.execute(
-      `INSERT INTO users (first_name, last_name, email, phone, password_hash, status, email_verified_at)
-       VALUES (?, ?, ?, ?, ?, 'active', CURRENT_TIMESTAMP)`,
-      [payload.first_name, payload.last_name, payload.email, payload.phone || null, payload.password_hash]
-    );
-    await connection.execute(
-      `INSERT INTO user_roles (user_id, role_id)
-       SELECT ?, id FROM roles WHERE code = 'staff'`,
-      [result.insertId]
-    );
-    return result.insertId;
-  });
 }
 
 function updateLastLogin(userId) {
@@ -201,7 +190,7 @@ async function changePassword(userId, passwordHash) {
 }
 
 module.exports = {
-  findUserByEmail, findUserById, getAccess, createStaffUser, updateLastLogin,
+  findUserByEmail, findUserById, getAccess, updateLastLogin,
   updateProfile, updateAvatar, saveAvatarContent, getAvatarByKey,
   storeRefreshToken, findRefreshToken, revokeRefreshToken, revokeAllUserTokens,
   createPasswordResetToken, createPasswordResetCode,

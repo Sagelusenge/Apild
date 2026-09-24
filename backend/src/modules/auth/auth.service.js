@@ -35,12 +35,9 @@ async function withAccess(user) {
 }
 
 async function register(payload, context) {
-  if (!env.ALLOW_PUBLIC_REGISTRATION) throw new AppError('Inscription publique desactivee', 403, 'REGISTRATION_DISABLED');
-  if (await repository.findUserByEmail(payload.email)) throw new AppError('Cette adresse email est deja utilisee', 409, 'EMAIL_EXISTS');
-  const password_hash = await bcrypt.hash(payload.password, env.BCRYPT_ROUNDS);
-  const id = await repository.createStaffUser({ ...payload, password_hash });
-  const user = await repository.findUserById(id);
-  return { user: await withAccess(user), tokens: await issueTokens(user, context) };
+  void payload;
+  void context;
+  throw new AppError('Les comptes sont crees par un administrateur.', 403, 'REGISTRATION_DISABLED');
 }
 
 async function login(payload, context) {
@@ -52,6 +49,7 @@ async function login(payload, context) {
   await repository.updateLastLogin(userWithPassword.id);
   const user = await repository.findUserById(userWithPassword.id);
   const securedUser = await withAccess(user);
+  if (!securedUser.roles.length) throw new AppError('Aucun role actif attribue. Contactez un administrateur.', 403, 'ROLE_REQUIRED');
   return {
     user: securedUser,
     tokens: await issueTokens(user, context),
@@ -73,6 +71,7 @@ async function refresh(refreshToken, context) {
   if (!user || user.status !== 'active') throw new AppError('Compte inactif', 401, 'ACCOUNT_INACTIVE');
   await repository.revokeRefreshToken(hashToken(refreshToken));
   const securedUser = await withAccess(user);
+  if (!securedUser.roles.length) throw new AppError('Aucun role actif attribue. Contactez un administrateur.', 403, 'ROLE_REQUIRED');
   return {
     user: securedUser,
     tokens: await issueTokens(user, context),

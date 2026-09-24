@@ -39,7 +39,7 @@ Dans **Projets**, créez une fiche avec un nom, un statut, des dates, un respons
 
 ### Documenter une intervention
 
-Dans **Interventions**, cliquez sur **Ajouter une intervention**. Saisissez un intitulé (par exemple « Dépistage communautaire »), choisissez le domaine **Santé**, indiquez la date et, si besoin, la localité, le projet associé et le nombre de bénéficiaires. Le projet est facultatif et la référence `INT-…` est générée automatiquement. Laissez le statut **Planifié** ou **En cours** tant que l’activité n’est pas terminée. Seules les interventions au statut **Terminé** apparaissent sur le site public et alimentent les totaux de bénéficiaires.
+Dans **Interventions**, cliquez sur **Ajouter une intervention**. Saisissez un intitulé (par exemple « Dépistage communautaire »), choisissez le domaine **Santé**, indiquez la date et, si besoin, la localité, le projet associé, la photo et le nombre de bénéficiaires. Le projet est facultatif et la référence `INT-…` est générée automatiquement. Laissez le statut **Planifié** ou **En cours** tant que l’activité n’est pas terminée. Seules les interventions au statut **Terminé** apparaissent sur le site public et alimentent les totaux de bénéficiaires.
 
 ### Gérer les tâches
 
@@ -51,7 +51,11 @@ Dans **Calendrier**, les jours passés restent consultables ; cliquez sur un jou
 
 ### Gérer l’équipe et les accès
 
-**Équipe** est alimentée par les comptes créés dans **Utilisateurs** : il n’existe pas de fiche d’équipe séparée. Créez un acteur avec son prénom, nom, adresse, mot de passe provisoire fort et rôle. L’utilisateur doit changer ce mot de passe lors de sa première connexion. Le manager peut modifier les comptes, les bloquer ou les réactiver ; seul ce rôle dispose de cette action. Dans **Rôles et permissions**, créez un rôle et choisissez ses autorisations si un nouveau profil métier est nécessaire. Évitez de supprimer les rôles système.
+**Équipe** et **Utilisateurs** désignent les mêmes acteurs : il n’existe pas de fiche d’équipe séparée. Créez un acteur dans **Utilisateurs** avec son prénom, nom, adresse, mot de passe provisoire fort et l’un des trois rôles **admin**, **communication** ou **RH**. L’utilisateur doit changer ce mot de passe lors de sa première connexion. Le manager peut modifier les comptes, les bloquer ou les réactiver ; seul ce rôle dispose de cette action. Dans **Rôles et permissions**, adaptez les autorisations de ces trois rôles ; la création d’un quatrième rôle est désactivée. Les anciens comptes limités au rôle `staff` perdent l’accès jusqu’à ce qu’un admin leur attribue un des trois rôles autorisés, sans promotion automatique.
+
+### Éditer les rapports
+
+Dans **Rapports**, saisissez le titre, la période, la synthèse et l’état détaillé, puis utilisez l’action **Télécharger le PDF**. L’état de sortie comporte l’en-tête APILD avec le logo à gauche, la référence, les informations essentielles, les sections du rapport et la pagination. Les rapports restent liés aux données enregistrées dans la base.
 
 ### Lire le journal d’audit
 
@@ -71,15 +75,27 @@ Dans **Articles**, créez le titre, le résumé et le texte, puis choisissez le 
 
 La **Médiathèque** est la bibliothèque des images et documents téléversés. Elle sert à conserver les fichiers, leur titre et leur lien avec un article ; ce n’est pas une page de rédaction. Un fichier joint depuis le formulaire d’article est aussi enregistré comme média. Les nouveaux médias et avatars téléversés sur Render sont stockés dans la base pour survivre aux redémarrages ; les anciens fichiers déjà perdus sur le disque Render doivent être téléversés à nouveau.
 
+### Documenter une intervention de terrain
+
+Dans **Interventions**, créez une fiche avec la date, le domaine, le lieu, les bénéficiaires et une photo choisie depuis votre appareil. La référence est automatique ; un projet associé reste facultatif. Modifiez la fiche si les informations évoluent. Seul le manager peut la supprimer. Le chiffre des bénéficiaires sur l’accueil n’est pas saisi séparément : il additionne les catégories déclarées dans les interventions **terminées**.
+
 ### Gérer newsletters et abonnés — installation locale uniquement
 
 Dans **Newsletters**, préparez une campagne, son objet et son contenu, puis déclenchez l’envoi selon les droits accordés. **Abonnés** liste les inscriptions. La publication d’un article peut avertir les abonnés actifs. Ces parcours exigent un SMTP opérationnel. Ils sont masqués et l’envoi est désactivé sur Render ; la rédaction et la publication des articles restent disponibles.
 
-## 4. Personnel / staff (`staff`)
+## 4. Ressources humaines (`rh`)
 
-### Suivre le travail
+### Gérer les dossiers et les contrats
 
-Le **Tableau de bord** présente ses éléments de travail. Dans **Mes tâches**, retrouvez les tâches accessibles et mettez à jour leur statut selon vos autorisations. **Calendrier** affiche les rendez-vous accessibles au personnel. **Documents** regroupe les pièces partagées et les livrables autorisés. Le staff ne gère pas les utilisateurs, rôles ou blocages de comptes.
+Dans **Dossiers du personnel**, rattachez un dossier à un acteur actif, puis renseignez le service, la fonction, le type et les dates d’engagement, le salaire contractuel, la devise **CDF ou USD** et le statut expatrié. Un acteur ne peut avoir qu’un seul dossier RH. Dans **Contrats**, créez une fiche contractuelle pour un acteur précis, indiquez sa fonction, sa durée, son lieu, sa rémunération et ses responsabilités, puis téléchargez la **fiche PDF** imprimable. Le logo APILD occupe la partie gauche de l’en-tête ; la fiche est paginée si son contenu est long. La fiche PDF récapitule les données et ne remplace pas le contrat signé. Le tableau de bord compte les dossiers et présente les échéances sous 60 jours. Seuls les rôles RH et admin peuvent lire ou modifier ces informations.
+
+### Traiter les congés
+
+Dans **Congés**, enregistrez le type, la période et le motif, puis faites évoluer le statut. Le système refuse une date de fin antérieure au début et deux congés approuvés qui se chevauchent pour la même personne. Le tableau de bord affiche les demandes en attente. Il n’y a pas de suivi des présences.
+
+### Préparer la paie
+
+Le dossier conserve les données contractuelles nécessaires à une future paie, mais **ne calcule, ne valide et ne verse pas de paie légale**. En particulier, les salaires USD, les collaborateurs expatriés, les avantages, les retenues et les exemptions nécessitent un paramétrage réglementaire applicable à APILD, une source et une date de taux de change, puis validation par un professionnel de la paie. Ne déduisez pas un net à payer du seul salaire contractuel affiché.
 
 ## 5. Mot de passe et e-mails
 

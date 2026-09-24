@@ -1097,7 +1097,7 @@ DELIMITER ;
 INSERT INTO roles (code, name, description, is_system) VALUES
     ('admin', 'Administration et coordination', 'Pilotage global, administration et coordination operationnelle de la plateforme', TRUE),
     ('communication', 'Communication', 'Gestion des contenus, medias et newsletters', TRUE),
-    ('staff', 'Personnel', 'Consultation des projets et gestion des taches assignees', TRUE)
+    ('rh', 'Ressources humaines', 'Gestion des dossiers du personnel, contrats et conges', TRUE)
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     description = VALUES(description),
@@ -1153,23 +1153,14 @@ JOIN permissions p ON p.code IN (
 )
 WHERE r.code = 'communication';
 
-INSERT IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id
-FROM roles r
-JOIN permissions p ON p.code IN (
-    'projects.read', 'tasks.read', 'tasks.update', 'documents.read',
-    'reports.read', 'notifications.read'
-)
-WHERE r.code = 'staff';
-
 INSERT INTO users (
     first_name, last_name, email, phone, password_hash, job_title, status, email_verified_at
 ) VALUES
     ('Amina', 'Kalala', 'admin@apild.test', '+243970000001', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Administratrice de la plateforme', 'active', CURRENT_TIMESTAMP),
     ('Patrick', 'Mwamba', 'manager@apild.test', '+243970000002', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Responsable de coordination', 'active', CURRENT_TIMESTAMP),
     ('Grace', 'Ilunga', 'communication@apild.test', '+243970000003', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Chargee de communication', 'active', CURRENT_TIMESTAMP),
-    ('David', 'Kabongo', 'staff1@apild.test', '+243970000004', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Agent de terrain', 'active', CURRENT_TIMESTAMP),
-    ('Sarah', 'Mutombo', 'staff2@apild.test', '+243970000005', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Assistante de projet', 'active', CURRENT_TIMESTAMP)
+    ('David', 'Kabongo', 'staff1@apild.test', '+243970000004', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Agent de terrain', 'inactive', CURRENT_TIMESTAMP),
+    ('Sarah', 'Mutombo', 'staff2@apild.test', '+243970000005', '$2b$12$WqdUU14qe/KfFor4LGb53umuZY5DWG7WcxkJBD/NMilwz8uUp2dX2', 'Assistante de projet', 'inactive', CURRENT_TIMESTAMP)
 ON DUPLICATE KEY UPDATE
     first_name = VALUES(first_name),
     last_name = VALUES(last_name),
@@ -1184,10 +1175,10 @@ JOIN roles r ON r.code = CASE
     WHEN u.email = 'admin@apild.test' THEN 'admin'
     WHEN u.email = 'manager@apild.test' THEN 'admin'
     WHEN u.email = 'communication@apild.test' THEN 'communication'
-    ELSE 'staff'
+    ELSE 'rh'
 END
 CROSS JOIN users admin_user
-WHERE u.email IN ('admin@apild.test', 'manager@apild.test', 'communication@apild.test', 'staff1@apild.test', 'staff2@apild.test')
+WHERE u.email IN ('admin@apild.test', 'manager@apild.test', 'communication@apild.test')
   AND admin_user.email = 'admin@apild.test';
 
 INSERT INTO intervention_domains (code, name, description, color) VALUES

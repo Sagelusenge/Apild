@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import react from 'eslint-plugin-react';
 
 export default [
-  { ignores: ['dist', 'dist/**', 'dist-verification', 'dist-verification/**'] },
+  { ignores: ['dist', 'dist/**', 'dist-*/**'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: { ecmaVersion: 2022, globals: globals.browser, parserOptions: { ecmaFeatures: { jsx: true }, sourceType: 'module' } },
