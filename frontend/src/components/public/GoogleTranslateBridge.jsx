@@ -1,0 +1,57 @@
+import { useEffect } from 'react';
+import { useUi } from '../../context/UiContext';
+
+const SCRIPT_ID = 'apild-google-translate-script';
+
+function syncGoogleLanguage(language) {
+  const combo = document.querySelector('.goog-te-combo');
+  if (!combo) return false;
+  const target = language === 'fr' ? '' : language;
+  if (combo.value !== target) {
+    combo.value = target;
+    combo.dispatchEvent(new Event('change'));
+  }
+  return true;
+}
+
+export default function GoogleTranslateBridge() {
+  const { language } = useUi();
+
+  useEffect(() => {
+    const initialize = () => {
+      if (!window.google?.translate?.TranslateElement || document.querySelector('.goog-te-combo')) return;
+      new window.google.translate.TranslateElement({
+        pageLanguage: 'fr',
+        includedLanguages: 'en,sw',
+        autoDisplay: false,
+        multilanguagePage: true
+      }, 'google_translate_element');
+    };
+
+    window.apildGoogleTranslateInit = initialize;
+    if (window.google?.translate?.TranslateElement) initialize();
+    else if (!document.getElementById(SCRIPT_ID)) {
+      const script = document.createElement('script');
+      script.id = SCRIPT_ID;
+      script.src = 'https://translate.google.com/translate_a/element.js?cb=apildGoogleTranslateInit';
+      script.async = true;
+      script.onerror = () => { delete window.apildGoogleTranslateInit; };
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      if (window.apildGoogleTranslateInit === initialize) delete window.apildGoogleTranslateInit;
+    };
+  }, []);
+
+  useEffect(() => {
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (syncGoogleLanguage(language) || attempts >= 20) window.clearInterval(timer);
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [language]);
+
+  return <div id="google_translate_element" className="google-translate-bridge" aria-hidden="true" />;
+}

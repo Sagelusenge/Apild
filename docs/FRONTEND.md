@@ -78,6 +78,8 @@ Les routes sont controlees par les roles renvoyes par `GET /api/auth/me`. Les au
 
 Chaque changement de page replace automatiquement la vue au debut de la page. Les cartes et les contenus publics ont des transitions discretes qui respectent le reglage systeme `prefers-reduced-motion`.
 
+Le site public conserve ses textes d’interface en FR/EN/SW et charge le widget Google Translate pour le contenu éditorial provenant de la base, notamment les titres et articles publiés. Le widget est discret : le sélecteur principal de l’en-tête reste la commande visible. Une connexion Internet est nécessaire pour traduire un article qui n’a pas de version éditée dans la langue choisie.
+
 Le calendrier permet de choisir une date future, un horaire, le motif et des acteurs participants. Le projet associé est facultatif. Les invitations sont envoyées uniquement lorsque les e-mails et les tâches de fond sont activés. Les rapports et les fiches contractuelles disposent d’une action de téléchargement PDF.
 
 ## Désabonnement
