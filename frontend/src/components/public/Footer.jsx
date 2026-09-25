@@ -6,7 +6,7 @@ import { emailFeaturesEnabled } from '../../config/features';
 
 export default function Footer() {
   const { text } = useUi();
-  return <footer className="public-footer"><div className="container footer-grid">
+  return <footer className="public-footer notranslate" translate="no"><div className="container footer-grid">
     <div><Link to="/" aria-label={text.a11y.home}><Brand inverse /></Link><p>{text.footer.description}</p></div>
     <div><h3>{text.footer.organization}</h3><Link to="/a-propos">{text.footer.presentation}</Link><Link to="/a-propos">{text.footer.mission}</Link><Link to="/a-propos">{text.footer.values}</Link></div>
     <div><h3>{text.footer.axes}</h3><Link to="/interventions">{text.footer.social}</Link><Link to="/interventions">{text.footer.capacities}</Link><Link to="/interventions">{text.footer.governance}</Link></div>

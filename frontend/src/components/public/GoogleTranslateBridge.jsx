@@ -30,7 +30,6 @@ export default function GoogleTranslateBridge() {
   const { language } = useUi();
   const { pathname } = useLocation();
   const translating = useRef(false);
-  const previousLanguage = useRef(language);
 
   useEffect(() => {
     const initialize = () => {
@@ -61,19 +60,7 @@ export default function GoogleTranslateBridge() {
   }, [language]);
 
   useLayoutEffect(() => {
-    const previous = previousLanguage.current;
-    previousLanguage.current = language;
     persistGoogleLanguage(language);
-
-    // Google modifies article text received from the API in place and cannot
-    // always reconstruct its original French nodes. A targeted refresh clears
-    // only that stale translated DOM; the selected language survives in local
-    // storage, so this runs once and the French article is restored reliably.
-    if (language === 'fr' && previous !== 'fr' && pathname.startsWith('/actualites')) {
-      localStorage.setItem('apild-language', 'fr');
-      window.location.reload();
-      return;
-    }
     syncGoogleLanguage(language, true);
   }, [language, pathname]);
 

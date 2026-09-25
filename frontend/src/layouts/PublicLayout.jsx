@@ -12,5 +12,5 @@ export default function PublicLayout() {
   const { pathname } = useLocation();
   const { language } = useUi();
 
-  return <><PublicAnalyticsTracker /><GoogleTranslateBridge /><Header key={`header-${language}`} /><main ref={contentRef} className="public-main"><PublicRevealObserver rootRef={contentRef} /><div className="public-route-transition" key={`${pathname}-${language}`}><Outlet /></div></main><Footer key={`footer-${language}`} /></>;
+  return <><PublicAnalyticsTracker /><GoogleTranslateBridge /><Header key={`header-${language}`} /><main ref={contentRef} className={`public-main${language === 'fr' ? ' notranslate' : ''}`} translate={language === 'fr' ? 'no' : 'yes'}><PublicRevealObserver rootRef={contentRef} /><div className="public-route-transition" key={`${pathname}-${language}`}><Outlet /></div></main><Footer key={`footer-${language}`} /></>;
 }

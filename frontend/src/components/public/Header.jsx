@@ -9,7 +9,7 @@ const links = [['/', 'home'], ['/a-propos', 'about'], ['/projets', 'projects'], 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const { language, setLanguage, theme, toggleTheme, text } = useUi();
-  return <header className="public-header"><div className="container public-nav">
+  return <header className="public-header notranslate" translate="no"><div className="container public-nav">
     <Link to="/" aria-label={text.a11y.home}><Brand /></Link>
     <nav className={open ? 'public-links is-open' : 'public-links'} aria-label={text.a11y.navigation}>
       {links.map(([to, key]) => <NavLink key={to} to={to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}>{text.nav[key]}</NavLink>)}
