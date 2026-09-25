@@ -101,10 +101,10 @@ export default function Modal({ open, title, onClose, children }) {
 
   const close = () => onClose?.();
   return createPortal(
-    <div className="modal-backdrop" onMouseDown={(event) => {
+    <div className="modal-backdrop notranslate" translate="no" onMouseDown={(event) => {
       if (event.target === event.currentTarget) close();
     }}>
-      <section ref={dialogRef} className="modal" role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : 'Fenêtre de dialogue'} tabIndex={-1}>
+      <section ref={dialogRef} className="modal notranslate" translate="no" role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : 'Fenêtre de dialogue'} tabIndex={-1}>
         <header>
           {title && <h2 id={titleId}>{title}</h2>}
           <button ref={closeButtonRef} className="icon-button" type="button" onClick={close} aria-label="Fermer"><X /></button>
