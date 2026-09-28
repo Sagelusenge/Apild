@@ -341,6 +341,26 @@ th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 .communication-panel-icon { width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 auto; color: var(--secondary); background: var(--mint); border-radius: 11px; }
 .communication-panel-icon--gold { color: #9a6800; background: var(--gold-tint); }
 .communication-panel-icon--blue { color: var(--navy); background: var(--blue-tint); }
+.communication-panel--trend { min-height: 390px; }
+.communication-panel-heading--between { justify-content: space-between; align-items: flex-start; gap: 18px; }
+.communication-panel-heading-copy { min-width: 0; display: flex; align-items: center; gap: 12px; }
+.communication-trend-tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--page); border-radius: 10px; }
+.communication-trend-tabs button { min-height: 36px; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; color: var(--muted); background: transparent; border: 0; border-radius: 8px; font-size: .72rem; font-weight: 750; cursor: pointer; }
+.communication-trend-tabs button.active { color: #fff; background: var(--secondary); box-shadow: 0 5px 14px rgba(8,122,91,.18); }
+.communication-trend { min-width: 0; }
+.communication-trend svg { width: 100%; min-height: 215px; overflow: visible; }
+.communication-trend svg line { stroke: var(--border); stroke-width: 1; }
+.communication-trend svg text { fill: var(--muted); font-size: 9px; text-anchor: end; }
+.communication-trend svg .communication-trend-date { text-anchor: middle; }
+.communication-trend-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; animation: communication-line-enter .65s ease both; }
+.communication-trend-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; margin-top: 4px; color: var(--muted); font-size: .72rem; }
+.communication-trend-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.communication-trend-legend i { width: 9px; height: 9px; border-radius: 50%; }
+.communication-reaction-totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.communication-reaction-totals span { min-height: 46px; display: flex; align-items: center; gap: 7px; padding: 0 12px; color: var(--muted); background: var(--page); border-radius: 9px; font-size: .72rem; }
+.communication-reaction-totals svg { color: var(--secondary); }
+.communication-reaction-totals strong { margin-left: auto; color: var(--navy); font-size: .9rem; }
+@keyframes communication-line-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 .communication-empty { min-height: 174px; display: grid; place-content: center; gap: 10px; color: var(--muted); text-align: center; }
 .communication-empty svg { justify-self: center; color: var(--secondary); }
 .communication-empty p { max-width: 300px; margin: 0; font-size: .8rem; line-height: 1.55; }
@@ -387,6 +407,12 @@ th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .communication-panel-footer { grid-template-columns: 1fr auto; }
   .communication-panel-footer span:nth-of-type(2) { grid-column: 1; }
   .communication-panel-footer strong:nth-of-type(2) { grid-column: 2; }
+  .communication-panel-heading--between { align-items: stretch; flex-direction: column; }
+  .communication-trend-tabs { align-self: stretch; }
+  .communication-trend-tabs button { flex: 1; justify-content: center; }
+  .communication-trend svg { min-width: 610px; }
+  .communication-trend { overflow-x: auto; padding-bottom: 5px; }
+  .communication-reaction-totals { grid-template-columns: 1fr; }
 }
 
 [data-theme='dark'] .performance-bar-track,

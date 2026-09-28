@@ -108,12 +108,23 @@ async function toggleReaction(articleId, visitorHash) {
 }
 
 async function registerShare(articleId) {
-  const result = await db.query(
-    "UPDATE articles SET shares_count = shares_count + 1 WHERE id = ? AND status = 'published' AND deleted_at IS NULL",
-    [articleId]
-  );
-  if (!result.affectedRows) return null;
-  return feedbackSummary(articleId);
+  return db.transaction(async (connection) => {
+    const [result] = await connection.execute(
+      "UPDATE articles SET shares_count = shares_count + 1 WHERE id = ? AND status = 'published' AND deleted_at IS NULL",
+      [articleId]
+    );
+    if (!result.affectedRows) return null;
+    await connection.execute('INSERT INTO article_share_events (article_id) VALUES (?)', [articleId]);
+    const [rows] = await connection.execute(`
+      SELECT a.likes_count,
+             a.shares_count,
+             (SELECT COUNT(*) FROM article_comments c WHERE c.article_id = a.id AND c.status = 'published') AS comments_count
+        FROM articles a
+       WHERE a.id = ?
+       LIMIT 1
+    `, [articleId]);
+    return rows[0] || null;
+  });
 }
 
 module.exports = {

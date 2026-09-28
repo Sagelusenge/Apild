@@ -21,6 +21,10 @@ module.exports = {
   async get(id) { return withCalculatedProjectProgress(await base.get(id)); },
   async create(payload, user) { return withCalculatedProjectProgress(await base.create(withoutManualProgress(payload), user)); },
   async update(id, payload, user) {
+    const current = await base.get(id);
+    if (current.status === 'completed') {
+      throw new AppError('Ce projet est terminé et ne peut plus être modifié.', 409, 'COMPLETED_RESOURCE_LOCKED');
+    }
     const data = withoutManualProgress(payload);
     if (!Object.keys(data).length) return withCalculatedProjectProgress(await base.get(id));
     return withCalculatedProjectProgress(await base.update(id, data, user));

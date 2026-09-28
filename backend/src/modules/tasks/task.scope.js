@@ -4,8 +4,7 @@ function hasUnrestrictedTaskAccess(user) {
 }
 
 function isStaffTaskScope(user) {
-  const roles = user?.roles || [];
-  return roles.includes('staff') && !hasUnrestrictedTaskAccess(user);
+  return !hasUnrestrictedTaskAccess(user);
 }
 
 module.exports = { hasUnrestrictedTaskAccess, isStaffTaskScope };

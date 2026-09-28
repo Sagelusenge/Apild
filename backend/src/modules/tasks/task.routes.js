@@ -17,6 +17,7 @@ router.patch('/:id',authenticate,requirePermission(config.updatePermission),vali
 router.delete('/:id',authenticate,requirePermission(config.deletePermission),controller.remove);
 router.get('/:id/assignees',authenticate,requirePermission('tasks.read'),controller.assignees);
 router.post('/:id/assignees',authenticate,requirePermission('tasks.assign'),validate(z.object({user_id:z.coerce.number().int().positive()}).strict()),controller.assign);
+router.put('/:id/assignees',authenticate,requirePermission('tasks.assign'),validate(z.object({user_ids:z.array(z.coerce.number().int().positive()).max(100)}).strict()),controller.replaceAssignees);
 router.delete('/:id/assignees/:userId',authenticate,requirePermission('tasks.assign'),controller.unassign);
 router.get('/:id/comments',authenticate,requirePermission('tasks.read'),controller.comments);
 router.post('/:id/comments',authenticate,requirePermission('tasks.update'),validate(z.object({comment_text:z.string().min(1)}).strict()),controller.addComment);

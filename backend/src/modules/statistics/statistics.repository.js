@@ -21,7 +21,7 @@ const communication = async () => (await db.query('SELECT * FROM v_communication
 const newsletters = () => db.query('SELECT * FROM v_newsletter_statistics ORDER BY sent_at DESC');
 
 async function communicationDashboard() {
-  const [summaryRows, popularPages, clickTargets] = await Promise.all([
+  const [summaryRows, popularPages, clickTargets, audienceSeries, engagementSeries] = await Promise.all([
     db.query(`
       SELECT
         (SELECT COUNT(*) FROM analytics_events
@@ -43,6 +43,9 @@ async function communicationDashboard() {
           AND published_at >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')) AS published_current_month,
         (SELECT COUNT(*) FROM articles WHERE deleted_at IS NULL AND status = 'draft') AS draft_articles,
         (SELECT COUNT(*) FROM articles WHERE deleted_at IS NULL AND status = 'review') AS review_articles
+        ,(SELECT COALESCE(SUM(likes_count), 0) FROM articles WHERE deleted_at IS NULL) AS total_likes
+        ,(SELECT COALESCE(SUM(shares_count), 0) FROM articles WHERE deleted_at IS NULL) AS total_shares
+        ,(SELECT COUNT(*) FROM article_comments WHERE status = 'published') AS total_comments
     `),
     db.query(`
       SELECT page_path, COUNT(*) AS views, COUNT(DISTINCT visitor_hash) AS visitors
@@ -60,10 +63,47 @@ async function communicationDashboard() {
       GROUP BY target_path
       ORDER BY clicks DESC, target_path ASC
       LIMIT 5
+    `),
+    db.query(`
+      SELECT DATE(occurred_at) AS day,
+             SUM(event_type = 'page_view') AS views,
+             COUNT(DISTINCT CASE WHEN event_type = 'page_view' THEN visitor_hash END) AS visitors,
+             SUM(event_type = 'cta_click') AS clicks
+      FROM analytics_events
+      WHERE occurred_at >= DATE_SUB(CURRENT_DATE, INTERVAL 29 DAY)
+      GROUP BY DATE(occurred_at)
+      ORDER BY day ASC
+    `),
+    db.query(`
+      SELECT day, SUM(likes) AS likes, SUM(comments) AS comments, SUM(shares) AS shares
+      FROM (
+        SELECT DATE(created_at) AS day, COUNT(*) AS likes, 0 AS comments, 0 AS shares
+        FROM article_reactions
+        WHERE created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 29 DAY)
+        GROUP BY DATE(created_at)
+        UNION ALL
+        SELECT DATE(created_at) AS day, 0 AS likes, COUNT(*) AS comments, 0 AS shares
+        FROM article_comments
+        WHERE status = 'published' AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 29 DAY)
+        GROUP BY DATE(created_at)
+        UNION ALL
+        SELECT DATE(created_at) AS day, 0 AS likes, 0 AS comments, COUNT(*) AS shares
+        FROM article_share_events
+        WHERE created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 29 DAY)
+        GROUP BY DATE(created_at)
+      ) daily
+      GROUP BY day
+      ORDER BY day ASC
     `)
   ]);
 
-  return { ...summaryRows[0], popular_pages: popularPages, click_targets: clickTargets };
+  return {
+    ...summaryRows[0],
+    popular_pages: popularPages,
+    click_targets: clickTargets,
+    audience_series: audienceSeries,
+    engagement_series: engagementSeries
+  };
 }
 
 module.exports = { overview, projects, communication, communicationDashboard, newsletters };

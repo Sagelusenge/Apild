@@ -13,6 +13,7 @@ controller.get=asyncHandler(async(req,res)=>success(res,await service.getForUser
 controller.update=asyncHandler(async(req,res)=>success(res,await service.updateForUser(req.params.id,req.body,req.user),`${config.entityName} modifie`));
 controller.assignees=asyncHandler(async(req,res)=>success(res,await service.assignees(req.params.id,req.user)));
 controller.assign=asyncHandler(async(req,res)=>success(res,await service.assign(req.params.id,req.body.user_id,req.user.id),'Utilisateur assigne'));
+controller.replaceAssignees=asyncHandler(async(req,res)=>success(res,await service.replaceAssignees(req.params.id,req.body.user_ids,req.user.id),'Affectations mises à jour'));
 controller.unassign=asyncHandler(async(req,res)=>{await service.unassign(req.params.id,req.params.userId);res.status(204).send();});
 controller.comments=asyncHandler(async(req,res)=>success(res,await service.comments(req.params.id,req.user)));
 controller.addComment=asyncHandler(async(req,res)=>created(res,await service.addComment(req.params.id,req.user.id,req.body.comment_text,req.user),'Commentaire ajoute'));

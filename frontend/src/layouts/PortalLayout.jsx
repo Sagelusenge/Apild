@@ -22,6 +22,7 @@ const searchTargets = [
   ['/admin/audit', 'le journal d’audit'],
   ['/communication/articles', 'les articles'],
   ['/communication/interventions', 'les interventions'],
+  ['/communication/taches', 'mes tâches'],
   ['/communication/calendrier', 'mon calendrier'],
   ['/communication/medias', 'les médias'],
   ['/communication/documents', 'les fichiers partagés'],
@@ -30,6 +31,7 @@ const searchTargets = [
   ['/rh/personnel', 'les dossiers du personnel'],
   ['/rh/conges', 'les congés'],
   ['/rh/contrats', 'les contrats'],
+  ['/rh/taches', 'mes tâches'],
   ['/rh/calendrier', 'mon calendrier'],
   ['/rh/documents', 'les fichiers partagés']
 ];
