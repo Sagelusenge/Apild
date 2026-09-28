@@ -15,10 +15,17 @@ const publicPath = z.string()
   .regex(/^\/[a-zA-Z0-9/_-]*$/, 'Chemin public invalide')
   .refine(isPublicPath, 'Chemin public non pris en charge');
 
+const trackedTarget = z.string()
+  .trim()
+  .min(1)
+  .max(240)
+  .regex(/^\/[a-zA-Z0-9/_-]*$/, 'Cible de suivi invalide')
+  .refine((value) => isPublicPath(value) || value.startsWith('/_action/'), 'Cible de suivi non prise en charge');
+
 const track = z.object({
   event_type: z.enum(['page_view', 'cta_click']),
   page_path: publicPath,
-  target_path: publicPath.nullable().optional(),
+  target_path: trackedTarget.nullable().optional(),
   visitor_id: z.string().trim().min(16).max(160).regex(/^[a-zA-Z0-9_-]+$/, 'Identifiant visiteur invalide')
 }).strict().superRefine((data, context) => {
   if (data.event_type === 'cta_click' && !data.target_path) {

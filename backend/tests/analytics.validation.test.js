@@ -20,10 +20,17 @@ describe('analytics tracking validation', () => {
       visitor_id: visitorId
     });
     expect(result.success).toBe(true);
+    expect(schemas.track.safeParse({
+      event_type: 'cta_click',
+      page_path: '/actualites/42',
+      target_path: '/_action/actualites-42/article-like',
+      visitor_id: visitorId
+    }).success).toBe(true);
   });
 
   test('rejects portal paths and a click without a destination', () => {
     expect(schemas.track.safeParse({ event_type: 'page_view', page_path: '/admin', visitor_id: visitorId }).success).toBe(false);
     expect(schemas.track.safeParse({ event_type: 'cta_click', page_path: '/', visitor_id: visitorId }).success).toBe(false);
+    expect(schemas.track.safeParse({ event_type: 'cta_click', page_path: '/', target_path: '/admin', visitor_id: visitorId }).success).toBe(false);
   });
 });

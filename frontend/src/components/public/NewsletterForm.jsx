@@ -17,6 +17,6 @@ export default function NewsletterForm({ compact = false }) {
   return <form className={`newsletter-form ${compact ? 'compact' : ''}`} onSubmit={submit}>
     <label className="sr-only" htmlFor={compact ? 'footer-email' : 'newsletter-email'}>{text.newsletter.label}</label>
     <input id={compact ? 'footer-email' : 'newsletter-email'} type="email" placeholder={text.newsletter.placeholder} value={email} onChange={(event) => setEmail(event.target.value)} required />
-    <button disabled={loading}>{loading ? text.newsletter.sending : text.newsletter.subscribe}</button>
+    <button data-analytics-action="newsletter-subscribe" disabled={loading}>{loading ? text.newsletter.sending : text.newsletter.subscribe}</button>
   </form>;
 }

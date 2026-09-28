@@ -5,7 +5,7 @@ import { emailFeaturesEnabled } from '../../config/features';
 
 const COPY = {
   fr: {
-    views: 'Pages vues', viewsHint: 'sur les 30 derniers jours', visitors: 'Visiteurs uniques', visitorsHint: 'mesure anonyme, 30 jours', clicks: 'Clics internes', clicksHint: 'liens publics, 30 jours', engagement: 'Réactions aux articles', likes: 'J’aime', comments: 'commentaires', shares: 'partages',
+    views: 'Pages vues', viewsHint: 'sur les 30 derniers jours', visitors: 'Visiteurs uniques', visitorsHint: 'mesure anonyme, 30 jours', clicks: 'Clics sur boutons et liens', clicksHint: 'actions publiques, 30 jours', engagement: 'Réactions aux articles', likes: 'J’aime', comments: 'commentaires', shares: 'partages', action: 'Action',
     popularTitle: 'Pages les plus consultées', popularSubtitle: 'Classement par vues sur les 30 derniers jours', clicksTitle: 'Liens les plus cliqués', clicksSubtitle: 'Interactions sur les liens publics', noTraffic: 'Les visites s’afficheront ici dès que la navigation publique produira des données.', viewsLabel: 'vues', visitorsLabel: 'visiteurs', clicksLabel: 'clics',
     trendTitle: 'Évolution de l’audience', trendSubtitle: 'Mesures quotidiennes réelles des 30 derniers jours', audienceTab: 'Audience', reactionsTab: 'Réactions',
     audienceTitle: 'Croissance de la newsletter', audienceSubtitle: 'Abonnements créés par période', thisMonth: 'Ce mois', previousMonth: 'Mois précédent', lastTwoMonths: 'Deux derniers mois', activeSubscribers: 'Abonnés actifs',
@@ -13,7 +13,7 @@ const COPY = {
     home: 'Accueil', about: 'À propos', projects: 'Projets', interventions: 'Interventions', news: 'Actualités', contact: 'Contact', article: 'Actualité', project: 'Projet'
   },
   en: {
-    views: 'Page views', viewsHint: 'in the last 30 days', visitors: 'Unique visitors', visitorsHint: 'anonymous measurement, 30 days', clicks: 'Internal clicks', clicksHint: 'public links, 30 days', engagement: 'Article reactions', likes: 'likes', comments: 'comments', shares: 'shares',
+    views: 'Page views', viewsHint: 'in the last 30 days', visitors: 'Unique visitors', visitorsHint: 'anonymous measurement, 30 days', clicks: 'Button and link clicks', clicksHint: 'public actions, 30 days', engagement: 'Article reactions', likes: 'likes', comments: 'comments', shares: 'shares', action: 'Action',
     popularTitle: 'Most viewed pages', popularSubtitle: 'Ranked by views in the last 30 days', clicksTitle: 'Most clicked links', clicksSubtitle: 'Interactions with public links', noTraffic: 'Visits will appear here once public browsing starts producing data.', viewsLabel: 'views', visitorsLabel: 'visitors', clicksLabel: 'clicks',
     trendTitle: 'Audience trend', trendSubtitle: 'Real daily measurements for the last 30 days', audienceTab: 'Audience', reactionsTab: 'Reactions',
     audienceTitle: 'Newsletter growth', audienceSubtitle: 'Subscriptions created by period', thisMonth: 'This month', previousMonth: 'Previous month', lastTwoMonths: 'Last two months', activeSubscribers: 'Active subscribers',
@@ -21,7 +21,7 @@ const COPY = {
     home: 'Home', about: 'About', projects: 'Projects', interventions: 'Interventions', news: 'News', contact: 'Contact', article: 'News item', project: 'Project'
   },
   sw: {
-    views: 'Kurasa zilizoonekana', viewsHint: 'siku 30 zilizopita', visitors: 'Wageni wa kipekee', visitorsHint: 'kipimo kisichotambulisha, siku 30', clicks: 'Mibofyo ya ndani', clicksHint: 'viungo vya umma, siku 30', engagement: 'Mwingiliano wa makala', likes: 'waliopenda', comments: 'maoni', shares: 'zilizoshirikiwa',
+    views: 'Kurasa zilizoonekana', viewsHint: 'siku 30 zilizopita', visitors: 'Wageni wa kipekee', visitorsHint: 'kipimo kisichotambulisha, siku 30', clicks: 'Mibofyo ya vitufe na viungo', clicksHint: 'vitendo vya umma, siku 30', engagement: 'Mwingiliano wa makala', likes: 'waliopenda', comments: 'maoni', shares: 'zilizoshirikiwa', action: 'Kitendo',
     popularTitle: 'Kurasa zilizotembelewa zaidi', popularSubtitle: 'Zimepangwa kwa maoni katika siku 30 zilizopita', clicksTitle: 'Viungo vilivyobofywa zaidi', clicksSubtitle: 'Mwingiliano kwenye viungo vya umma', noTraffic: 'Matembezi yataonekana hapa mara data ya tovuti itakapopatikana.', viewsLabel: 'maoni', visitorsLabel: 'wageni', clicksLabel: 'mibofyo',
     trendTitle: 'Mwenendo wa hadhira', trendSubtitle: 'Vipimo halisi vya kila siku kwa siku 30', audienceTab: 'Hadhira', reactionsTab: 'Mwingiliano',
     audienceTitle: 'Ukuaji wa jarida', audienceSubtitle: 'Usajili ulioundwa kwa kipindi', thisMonth: 'Mwezi huu', previousMonth: 'Mwezi uliopita', lastTwoMonths: 'Miezi miwili iliyopita', activeSubscribers: 'Waliojiandikisha hai',
@@ -34,6 +34,10 @@ const COLORS = ['#087a5b', '#2d76a5', '#d08a12'];
 const count = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
 
 function publicPathLabel(path, copy) {
+  if (path.startsWith('/_action/')) {
+    const actionName = path.split('/').at(-1).replaceAll('-', ' ');
+    return `${copy.action} · ${actionName}`;
+  }
   const direct = { '/': copy.home, '/a-propos': copy.about, '/projets': copy.projects, '/interventions': copy.interventions, '/actualites': copy.news, '/contact': copy.contact };
   if (direct[path]) return direct[path];
   if (path.startsWith('/actualites/')) return `${copy.article} · ${path.split('/').at(-1)}`;

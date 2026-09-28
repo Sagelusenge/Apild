@@ -30,6 +30,27 @@ function record(payload) {
   analyticsApi.track({ ...payload, visitor_id: anonymousVisitorId() }).catch(() => undefined);
 }
 
+function slug(value, fallback = 'bouton') {
+  const normalized = String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 70);
+  return normalized || fallback;
+}
+
+function buttonTarget(button, pagePath) {
+  const page = pagePath === '/' ? 'accueil' : slug(pagePath, 'page');
+  const explicit = button.dataset.analyticsAction;
+  const form = button.closest('form');
+  const fallback = button.type === 'submit' && form
+    ? `envoyer-${form.getAttribute('aria-label') || form.id || form.className || 'formulaire'}`
+    : button.getAttribute('aria-label') || button.title || button.textContent;
+  return `/_action/${page}/${slug(explicit || fallback)}`;
+}
+
 /**
  * Tracks only public routes and internal public links. No query strings,
  * contact form content, IP address, or browser information is collected.
@@ -55,12 +76,18 @@ export default function PublicAnalyticsTracker() {
   useEffect(() => {
     const onClick = (event) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      const link = event.target.closest?.('a[href]');
-      if (!link || link.target === '_blank') return;
-      const destination = new URL(link.href, window.location.origin);
-      if (destination.origin !== window.location.origin) return;
-      const targetPath = destination.pathname;
-      if (!isPublicPath(pagePath) || !isPublicPath(targetPath)) return;
+      if (!isPublicPath(pagePath)) return;
+      const control = event.target.closest?.('a[href], button, [role="button"]');
+      if (!control || control.hasAttribute('disabled')) return;
+      let targetPath;
+      if (control.matches('a[href]')) {
+        if (control.target === '_blank') return;
+        const destination = new URL(control.href, window.location.origin);
+        if (destination.origin !== window.location.origin || !isPublicPath(destination.pathname)) return;
+        targetPath = destination.pathname;
+      } else {
+        targetPath = buttonTarget(control, pagePath);
+      }
       record({ event_type: 'cta_click', page_path: pagePath, target_path: targetPath });
     };
     document.addEventListener('click', onClick);
